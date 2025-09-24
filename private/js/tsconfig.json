@@ -1,0 +1,43 @@
+{
+	// Visit https://aka.ms/tsconfig to read more about this file
+	"compilerOptions": {
+		// File Layout
+		// "rootDir": "/var/www/club_website_scripts",
+		"outDir": "/var/www/club_website/public/js",
+		// Environment Settings
+		// See also https://aka.ms/tsconfig/module
+		"module": "esnext",
+		"target": "esnext",
+		"types": [],
+		// For nodejs:
+		 "lib": ["DOM", "esnext"],
+		// "types": ["node"],
+		// and npm install -D @types/node
+		// Other Outputs
+		"sourceMap": true,
+		//"inlineSourceMap": true,
+		//"sourceRoot": "/var/www/club_website_scripts",
+		"declaration": false,
+		"declarationMap": false,
+		// Stricter Typechecking Options
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		// Style Options
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noPropertyAccessFromIndexSignature": true,
+		// Recommended Options
+		"strict": true,
+		"jsx": "react-jsx",
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"noUncheckedSideEffectImports": true,
+		"moduleDetection": "force",
+		"skipLibCheck": true,
+	},
+	"include": ["./**/*.ts", "./**/*.tsx"],
+	"exclude": ["node_modules", "dist"]
+}
