@@ -69,15 +69,6 @@ function my_var_dump($mixed = null): string
 function sendResponse(bool $success, string $data): void
 {
 	header('Content-Type: application/json');
-
-	//if($success)
-	//	$include = ["success" => true, "data" => $data];
-	//else {
-	//	$include = ["success" => false, "data" => ""];
-	//	// what todo with $data?
-	//}
-
-	//echo json_encode($include);
 	echo json_encode(["success" => $success, "data" => $data]);
 }
 
@@ -146,91 +137,6 @@ function my_session_start()
 		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not start session");
 	}
-
-	//if (isset($_SESSION['destroyed'])) {
-	//	if ($_SESSION['destroyed'] < time() - 300) {
-	//		// Should not happen usually. This could be attack or due to unstable network.
-	//		// Remove all authentication status of this users session.
-	//		my_session_destroy();
-	//		if (session_start() === false) {
-	//			sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
-	//			internalError("Could not start session after destroying old one");
-	//		}
-	//		return;
-	//	}
-
-	//	if (isset($_SESSION['new_session_id'])) {
-	//		// Not fully expired yet. Could be lost cookie by unstable network.
-	//		// Try again to set proper session ID cookie.
-	//		// NOTE: Do not try to set session ID again if you would like to remove
-	//		// authentication flag.
-	//		if (session_commit() === false) {
-	//			sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
-	//			internalError("Could not commit session");
-	//		}
-
-	//		if (session_id($_SESSION['new_session_id']) === false) {
-	//			sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
-	//			internalError("Could not set session ID");
-	//		}
-
-	//		// New session ID should exist
-	//		if (session_start() === false) {
-	//			sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
-	//			internalError("Could not start session with new session ID");
-	//		}
-
-	//return;
-	//	}
-	//}
-}
-
-//==============================================================================
-// My session regenerate id function
-//
-// Session ID must be regenerated when
-//  - User logged in
-//  - User logged out
-//  - Certain period has passed
-//
-//	TODO: session data is lost?
-//	TODO: this function may not be needed any more
-//==============================================================================
-function my_session_regenerate_id()
-{
-	// New session ID is required to set proper session ID
-	// when session ID is not set due to unstable network.
-	$new_session_id = session_create_id();
-	if ($new_session_id === false) {
-		sendResponse(false, "Internal error " . __LINE__);
-		internalError("Could not create new session ID");
-	}
-
-	$_SESSION['new_session_id'] = $new_session_id;
-
-	// Set destroy timestamp
-	$_SESSION['destroyed'] = time();
-
-	// Write and close current session;
-	if (session_commit() === false) {
-		sendResponse(false, "Internal error " . __LINE__);
-		internalError("Could not commit session");
-	}
-
-	// Start session with new session ID
-	if (session_id($new_session_id) === false) {
-		sendResponse(false, "Internal error " . __LINE__);
-		internalError("Could not set new session ID");
-	}
-
-	// Disable strict mode temporarily to avoid "session ID not found" error
-	ini_set('session.use_strict_mode', 0);
-	session_start();
-	ini_set('session.use_strict_mode', 1);
-
-	// New session does not need them
-	unset($_SESSION['destroyed']);
-	unset($_SESSION['new_session_id']);
 }
 
 //==============================================================================
