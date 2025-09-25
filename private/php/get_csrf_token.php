@@ -4,38 +4,10 @@ declare(strict_types=1);
 
 require_once 'include.php';
 
-exit("Here's your damm token");
+getCSRFToken();
 
-function get_csrf_token(): string
+function getCSRFToken(): void
 {
-	////------------------------------------------------------------------------------
-	////	send a JSON response to the client
-	////------------------------------------------------------------------------------
-	//function sendResponse(string $message): void
-	//{
-	//	header('Content-Type: application/json');
-	//	echo json_encode(["status" => "error", "message" => $message], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-	//}
-
-	////------------------------------------------------------------------------------
-	////	log an internal error
-	////------------------------------------------------------------------------------
-	//function internalError(string $message): void
-	//{
-	//	error_log("Internal error: " . $message);
-	//}
-
-	////------------------------------------------------------------------------------
-	////	validate an IP address
-	////------------------------------------------------------------------------------
-	//function isValidIPAddr(string $ip): bool
-	//{
-	//	if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false)
-	//		if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false)
-	//			return false;
-	//	return true;
-	//}
-
 	//==============================================================================
 	//	start the session
 	//==============================================================================
@@ -52,7 +24,7 @@ function get_csrf_token(): string
 	if (isset($_SESSION["lockout_end_time"])) {
 		$time_diff = $_SESSION["lockout_end_time"] - time();
 		if ($time_diff > 0) {
-			sendResponse("Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+			sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
 			exit;
 		}
 	}
@@ -60,8 +32,13 @@ function get_csrf_token(): string
 	//==============================================================================
 	//	get out quick if browser ID or IP address missing
 	//==============================================================================
-	if (empty($_SERVER["HTTP_USER_AGENT"]) or empty($_SERVER["REMOTE_ADDR"])) {
-		sendResponse("Security issue " . __LINE__ . " detected, please refresh the page.");
+	if (empty($_SERVER["HTTP_USER_AGENT"])) {
+		sendResponse(false, "Unknown browser.");
+		exit;
+	}
+
+	if (empty($_SERVER["REMOTE_ADDR"])) {
+		sendResponse(false, "Missing IP address.");
 		exit;
 	}
 
@@ -82,7 +59,7 @@ function get_csrf_token(): string
 		if (count($_SESSION["time_accessed"]) >= 2) {
 			$time_diff = time() - $_SESSION["time_accessed"][count($_SESSION["time_accessed"]) - 2];
 			if ($time_diff === 0) {
-				sendResponse("You are accessing too frequently. Please wait a one minute and try again.");
+				sendResponse(true, "You are accessing too frequently. Please wait a one minute and try again.");
 				$_SESSION["lockout_end_time"] = time() + 60;
 				$_SESSION["lockout_end_time_human"] = date("r", time() + 60);
 				exit;
@@ -95,7 +72,7 @@ function get_csrf_token(): string
 	if (empty($_SESSION["lockout_end_time"]))
 		if (isset($_SESSION["time_accessed"]))
 			if (count($_SESSION["time_accessed"]) >= 9) {
-				sendResponse("Email entry limit exceeded, 10 minute lockout started. Once you confirm your email address please re-visit the site.");
+				sendResponse(true, "Email entry limit exceeded, 10 minute lockout started. Once you confirm your email address please re-visit the site.");
 				$_SESSION["lockout_end_time"] = time() + 600;
 				$_SESSION["lockout_end_time_human"] = date("r", time() + 600);
 				exit;
@@ -113,7 +90,7 @@ function get_csrf_token(): string
 			unset($_SESSION["time_accessed"]);
 			unset($_SESSION["time_accessed_human"]);
 		} else {
-			sendResponse("Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+			sendResponse(true, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
 			exit;
 		}
 	}
@@ -124,7 +101,7 @@ function get_csrf_token(): string
 	$_SESSION["browser"][] = $_SERVER['HTTP_USER_AGENT'] ?? "?";
 	$_SESSION["browser"] = array_slice($_SESSION["browser"], -2);
 	if (count(array_unique($_SESSION["browser"])) !== 1) {
-		sendResponse("Security issue " . __LINE__ . " detected, please refresh the page.");
+		sendResponse(true, "New browser?");
 		internalError("Browser changed: " . print_r($_SESSION["browser"], true));
 	}
 
@@ -134,7 +111,7 @@ function get_csrf_token(): string
 	$_SESSION["ip_address"][] = $_SERVER['REMOTE_ADDR'] ?? "?";
 	$_SESSION["ip_address"] = array_slice($_SESSION["ip_address"], -2);
 	if (count(array_unique($_SESSION["ip_address"])) !== 1) {
-		sendResponse("Security issue " . __LINE__ . " detected, please refresh the page.");
+		sendResponse(true, "IP address changed.");
 		internalError("IP address changed: " . print_r($_SESSION["ip_address"], true));
 	}
 
@@ -142,7 +119,7 @@ function get_csrf_token(): string
 	//	validate IP address
 	//==============================================================================
 	if (isValidIPAddr($_SESSION["ip_address"][0]) !== true) {
-		sendResponse("Security issue " . __LINE__ . " detected, please refresh the page.");
+		sendResponse(true, "Invalid IP address.");
 		internalError("Invalid or missing IP address: \"" . $_SESSION["ip_address"] . "\"");
 	}
 
@@ -150,7 +127,7 @@ function get_csrf_token(): string
 	//	If a CSRF has already been generated, return it
 	//==============================================================================
 	if (isset($_SESSION["csrf_token"]))
-		exit($_SESSION["csrf_token"]);
+		sendResponse(true, $_SESSION["csrf_token"]);
 
 	//==============================================================================
 	//	Create a new CSRF tokens
@@ -161,5 +138,5 @@ function get_csrf_token(): string
 	//==============================================================================
 	//	return the CSRF token to the client
 	//==============================================================================
-	exit($_SESSION["csrf_token"]);
+	sendResponse(true, $_SESSION["csrf_token"]);
 }
