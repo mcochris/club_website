@@ -4,7 +4,9 @@ $script = trim(filter_input(INPUT_POST, 'script', FILTER_SANITIZE_FULL_SPECIAL_C
 try {
 	require __DIR__ . "/$script";
 } catch (\Throwable $e) {
-	exit("❌ " . $e->getMessage());
+	exit(json_encode(["success" => false, "data" => $e->getMessage()]));
 }
 
-exit("👍");
+// If we get to here, the script was included and ran without throwing an exception or exiting.
+// Normally if the script returns anything, it does so by calling sendResponse().
+exit;
