@@ -93,7 +93,9 @@
 		})
 	});
 
-
+	//=============================================================
+	// Disable email input and remove submit button
+	//=============================================================
 	function disableEmailInput() {
 		EMAIL.disabled = true;
 		FORM_BUTTON.remove();
