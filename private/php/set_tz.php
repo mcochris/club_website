@@ -8,7 +8,10 @@ my_session_start();
 
 $timezone = filter_input(INPUT_POST, 'timezone', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-if (empty($timezone))
-	internalError("No timezone received from client");
+empty($timezone) and exit(sendResponse(false, "No timezone sent to server."));
+
+date_default_timezone_set($timezone) or exit(sendResponse(false, "Invalid timezone sent to server."));
 
 $_SESSION["TZ"] = $timezone;
+
+sendResponse(true, "Valid timezone sent to server.");
