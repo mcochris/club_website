@@ -61,10 +61,19 @@ function my_var_dump($mixed = null): string
 //==============================================================================
 //	Send results back to client
 //==============================================================================
-function sendResponse(string $text): void
+function sendResponse(bool $success, string $data): void
 {
-	header('Content-Type: text/plain');
-	echo $text;
+	header('Content-Type: application/json');
+
+	//if($success)
+	//	$include = ["success" => true, "data" => $data];
+	//else {
+	//	$include = ["success" => false, "data" => ""];
+	//	// what todo with $data?
+	//}
+
+	//echo json_encode($include);
+	echo json_encode(["success" => $success, "data" => $data]);
 }
 
 //==============================================================================
@@ -74,7 +83,7 @@ function getServerSecret(): string
 {
 	$s = getenv('CSRF_SECRET');
 	if (empty($s)) {
-		sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not get CSRF secret from environment");
 	}
 
@@ -129,7 +138,7 @@ function my_session_destroy(): void
 function my_session_start()
 {
 	if (session_start() === false) {
-		sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not start session");
 	}
 
@@ -188,7 +197,7 @@ function my_session_regenerate_id()
 	// when session ID is not set due to unstable network.
 	$new_session_id = session_create_id();
 	if ($new_session_id === false) {
-		sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not create new session ID");
 	}
 
@@ -199,13 +208,13 @@ function my_session_regenerate_id()
 
 	// Write and close current session;
 	if (session_commit() === false) {
-		sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not commit session");
 	}
 
 	// Start session with new session ID
 	if (session_id($new_session_id) === false) {
-		sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not set new session ID");
 	}
 
@@ -229,7 +238,7 @@ function open_db(): PDO
 		$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 	} catch (PDOException $e) {
-		sendResponse("Internal error " . __LINE__ . ". Please refresh the page.");
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Could not connect to database: " . $e->getMessage());
 	}
 
