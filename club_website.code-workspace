@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../usr/local/nginx/conf"
+		}
+	],
+	"settings": {
+		"cSpell.words": [
+			"ERRMODE",
+			"httponly",
+			"maxlifetime",
+			"Strawser",
+			"URLSAFE"
+		]
+	}
+}
