@@ -18,6 +18,8 @@ main {
 	overflow: auto;
 	height: 100%;
 	overflow: auto;
+	visibility: hidden;
+	text-align: center;
 }
 
 header {
@@ -36,9 +38,5 @@ footer {
 	margin-top: 20px;
 	padding: 10px;
 	border-top: 1px solid #ccc;
-	text-align: center;
-}
-
-form {
 	text-align: center;
 }
