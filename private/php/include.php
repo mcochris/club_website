@@ -37,10 +37,15 @@ function internalError(string $error_message = ""): void
 	// user should have been informed already via sendResponse()
 	$contents = my_var_dump(debug_backtrace());
 
-	$pdo = open_db();
-	$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
-	$stmt->bindParam(':exception', $contents, PDO::PARAM_STR);
-	$stmt->execute();
+	try {
+		$pdo = open_db();
+		$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
+		$stmt->bindParam(':exception', $contents, PDO::PARAM_STR);
+		$stmt->execute();
+	} catch (PDOException $e) {
+		my_session_destroy();
+		exit;
+	}
 
 	my_session_destroy();
 	exit;
@@ -238,8 +243,10 @@ function open_db(): PDO
 		$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 	} catch (PDOException $e) {
+		//	Don't call internalError() here as it would try to open DB again
 		sendResponse(false, "Internal error " . __LINE__);
-		internalError("Could not connect to database: " . $e->getMessage());
+		my_session_destroy();
+		exit;
 	}
 
 	return $pdo;
