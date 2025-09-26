@@ -24,7 +24,7 @@ function getCSRFToken(): void
 	if (isset($_SESSION["lockout_end_time"])) {
 		$time_diff = $_SESSION["lockout_end_time"] - time();
 		if ($time_diff > 0) {
-			sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+			sendResponse(true, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
 			exit;
 		}
 	}
@@ -33,12 +33,12 @@ function getCSRFToken(): void
 	//	get out quick if browser ID or IP address missing
 	//==============================================================================
 	if (empty($_SERVER["HTTP_USER_AGENT"])) {
-		sendResponse(false, "Unknown browser.");
+		sendResponse(true, "Unknown browser.");
 		exit;
 	}
 
 	if (empty($_SERVER["REMOTE_ADDR"])) {
-		sendResponse(false, "Missing IP address.");
+		sendResponse(true, "Missing IP address.");
 		exit;
 	}
 
