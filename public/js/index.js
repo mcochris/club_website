@@ -32,8 +32,8 @@
         FORM_DATA.append('script', "set_tz.php");
         FORM_DATA.append('timezone', TIMEZONE);
         const REPLY = await postData(FORM_DATA);
-        if (!REPLY.success)
-            DOCUMENT_MAIN.innerHTML = `<h1>Error 1 sending timezone</h1><p>${REPLY.data}</p>`;
+        if (REPLY.display === false)
+            DOCUMENT_MAIN.innerHTML = `<h1>Error 1 sending timezone</h1>`;
     })().catch(_error => {
         DOCUMENT_MAIN.innerHTML = '<h1>Error 2 sending timezone</h1>';
     });
@@ -44,10 +44,10 @@
         const FORM_DATA = new FormData();
         FORM_DATA.append('script', "get_csrf_token.php");
         const REPLY = await postData(FORM_DATA);
-        if (REPLY.success)
-            CSRF_TOKEN.value = REPLY.data;
+        if (REPLY.display)
+            CSRF_TOKEN.value = REPLY.message;
         else {
-            DOCUMENT_MAIN.innerHTML = `<h1>Error 1 getting CSRF token</h1><p>${REPLY.data}</p>`;
+            DOCUMENT_MAIN.innerHTML = `<h1>Error 1 getting CSRF token</h1>`;
             disableEmailInput();
         }
     })().catch(_error => {
@@ -66,8 +66,8 @@
             FORM_DATA.append('email', EMAIL.value);
             FORM_DATA.append('csrf_token', CSRF_TOKEN.value);
             const REPLY = await postData(FORM_DATA);
-            if (REPLY.success)
-                MESSAGE.innerHTML = `<p>${REPLY.data}</p>`;
+            if (REPLY.display)
+                MESSAGE.innerHTML = `<p>${REPLY.message}</p>`;
             else
                 DOCUMENT_MAIN.innerHTML = `<h1>Error 1 processing email entry</h1>`;
             disableEmailInput();
