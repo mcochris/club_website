@@ -66,10 +66,10 @@ function my_var_dump($mixed = null): string
 //==============================================================================
 //	Send results back to client
 //==============================================================================
-function sendResponse(bool $success, string $data): void
+function sendResponse(bool $display, string $message): void
 {
 	header('Content-Type: application/json');
-	echo json_encode(["success" => $success, "data" => $data]);
+	echo json_encode(["display" => $display, "message" => $message]);
 }
 
 //==============================================================================
