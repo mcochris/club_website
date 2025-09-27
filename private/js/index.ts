@@ -61,7 +61,7 @@
 		if (REPLY.display)
 			CSRF_TOKEN.value = REPLY.message;
 		else {
-			DOCUMENT_MAIN.innerHTML = `<h1>Error 1 getting CSRF token</h1>`;
+			DOCUMENT_MAIN.innerHTML = REPLY.message;
 			disableEmailInput();
 		}
 	})().catch(_error => {
