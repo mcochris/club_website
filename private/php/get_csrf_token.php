@@ -24,7 +24,7 @@ function getCSRFToken(): void
 	if (isset($_SESSION["lockout_end_time"])) {
 		$time_diff = $_SESSION["lockout_end_time"] - time();
 		if ($time_diff > 0) {
-			sendResponse(true, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+			sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
 			exit;
 		}
 	}
@@ -33,12 +33,12 @@ function getCSRFToken(): void
 	//	get out quick if browser ID or IP address missing
 	//==============================================================================
 	if (empty($_SERVER["HTTP_USER_AGENT"])) {
-		sendResponse(true, "Unknown browser.");
+		sendResponse(false, "Unknown browser.");
 		exit;
 	}
 
 	if (empty($_SERVER["REMOTE_ADDR"])) {
-		sendResponse(true, "Missing IP address.");
+		sendResponse(false, "Missing IP address.");
 		exit;
 	}
 
@@ -59,7 +59,7 @@ function getCSRFToken(): void
 		if (count($_SESSION["time_accessed"]) >= 2) {
 			$time_diff = time() - $_SESSION["time_accessed"][count($_SESSION["time_accessed"]) - 2];
 			if ($time_diff === 0) {
-				sendResponse(true, "You are accessing too frequently. Please wait a one minute and try again.");
+				sendResponse(false, "You are accessing too frequently. Please wait a one minute and try again.");
 				$_SESSION["lockout_end_time"] = time() + 60;
 				$_SESSION["lockout_end_time_human"] = date("r", time() + 60);
 				exit;
@@ -72,7 +72,7 @@ function getCSRFToken(): void
 	if (empty($_SESSION["lockout_end_time"]))
 		if (isset($_SESSION["time_accessed"]))
 			if (count($_SESSION["time_accessed"]) >= 9) {
-				sendResponse(true, "Email entry limit exceeded, 10 minute lockout started. Once you confirm your email address please re-visit the site.");
+				sendResponse(false, "Email entry limit exceeded, 10 minute lockout started. Once you confirm your email address please re-visit the site.");
 				$_SESSION["lockout_end_time"] = time() + 600;
 				$_SESSION["lockout_end_time_human"] = date("r", time() + 600);
 				exit;
@@ -90,7 +90,7 @@ function getCSRFToken(): void
 			unset($_SESSION["time_accessed"]);
 			unset($_SESSION["time_accessed_human"]);
 		} else {
-			sendResponse(true, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+			sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
 			exit;
 		}
 	}
@@ -101,8 +101,8 @@ function getCSRFToken(): void
 	$_SESSION["browser"][] = $_SERVER['HTTP_USER_AGENT'] ?? "?";
 	$_SESSION["browser"] = array_slice($_SESSION["browser"], -2);
 	if (count(array_unique($_SESSION["browser"])) !== 1) {
-		sendResponse(true, "New browser?");
-		internalError("Browser changed: " . print_r($_SESSION["browser"], true));
+		sendResponse(false, "New browser?");
+		internalError("Browser changed: " . print_r($_SESSION["browser"]));
 	}
 
 	//==============================================================================
@@ -111,15 +111,15 @@ function getCSRFToken(): void
 	$_SESSION["ip_address"][] = $_SERVER['REMOTE_ADDR'] ?? "?";
 	$_SESSION["ip_address"] = array_slice($_SESSION["ip_address"], -2);
 	if (count(array_unique($_SESSION["ip_address"])) !== 1) {
-		sendResponse(true, "IP address changed.");
-		internalError("IP address changed: " . print_r($_SESSION["ip_address"], true));
+		sendResponse(false, "IP address changed.");
+		internalError("IP address changed: " . print_r($_SESSION["ip_address"]));
 	}
 
 	//==============================================================================
 	//	validate IP address
 	//==============================================================================
 	if (isValidIPAddr($_SESSION["ip_address"][0]) !== true) {
-		sendResponse(true, "Invalid IP address.");
+		sendResponse(false, "Invalid IP address.");
 		internalError("Invalid or missing IP address: \"" . $_SESSION["ip_address"] . "\"");
 	}
 
