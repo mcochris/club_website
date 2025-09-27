@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once "include.php";
 
-my_session_start();
+mySessionStart();
 
 $timezone = filter_input(INPUT_POST, 'timezone', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 

@@ -11,7 +11,7 @@ function email_entered(): void
 	//==============================================================================
 	//	start the session
 	//==============================================================================
-	my_session_start();
+	mySessionStart();
 
 	//------------------------------------------------------------------------------
 	//	set the timezone
@@ -82,7 +82,7 @@ function email_entered(): void
 	//	If we get to here, we got a valid email address. Time to see if they are in
 	//	the DB. Open DB connection
 	//==============================================================================
-	$pdo = open_db();
+	$pdo = openDb();
 
 	//==============================================================================
 	//	See if users' email is in DB
@@ -102,7 +102,7 @@ function email_entered(): void
 	//==============================================================================
 	if ($row === false) {
 		sendResponse(true, "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.");
-		my_session_destroy();
+		mySessionDestroy();
 		exit;
 	}
 
@@ -123,6 +123,6 @@ function email_entered(): void
 	}
 
 	sendResponse(true, "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.");
-	my_session_destroy();
+	mySessionDestroy();
 	exit;
 }

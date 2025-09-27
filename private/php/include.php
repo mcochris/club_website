@@ -35,26 +35,26 @@ foreach (SESSION_SETTINGS as $key => $value)
 function internalError(string $error_message = ""): void
 {
 	// user should have been informed already via sendResponse()
-	$contents = my_var_dump(debug_backtrace());
+	$contents = myVarDump(debug_backtrace());
 
 	try {
-		$pdo = open_db();
+		$pdo = openDb();
 		$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
 		$stmt->bindParam(':exception', $contents, PDO::PARAM_STR);
 		$stmt->execute();
 	} catch (PDOException $e) {
-		my_session_destroy();
+		mySessionDestroy();
 		exit;
 	}
 
-	my_session_destroy();
+	mySessionDestroy();
 	exit;
 }
 
 //==============================================================================
 //	var_dump to string
 //==============================================================================
-function my_var_dump($mixed = null): string
+function myVarDump($mixed = null): string
 {
 	ob_start();
 	var_dump($mixed);
@@ -107,7 +107,7 @@ function isValidIPAddr(string $ipAddr = ""): bool
 //==============================================================================
 //	destroy session securely
 //==============================================================================
-function my_session_destroy(): void
+function mySessionDestroy(): void
 {
 	$_SESSION = [];
 
@@ -131,7 +131,7 @@ function my_session_destroy(): void
 // My session start function support timestamp management
 // TODO: "do not use ol session" logic not working as expected
 //==============================================================================
-function my_session_start()
+function mySessionStart()
 {
 	if (session_start() === false) {
 		sendResponse(false, "Internal error " . __LINE__);
@@ -142,7 +142,7 @@ function my_session_start()
 //==============================================================================
 //	Open database
 //==============================================================================
-function open_db(): PDO
+function openDb(): PDO
 {
 	try {
 		$pdo = new PDO(DSN);
@@ -151,7 +151,7 @@ function open_db(): PDO
 	} catch (PDOException $e) {
 		//	Don't call internalError() here as it would try to open DB again
 		sendResponse(false, "Internal error " . __LINE__);
-		my_session_destroy();
+		mySessionDestroy();
 		exit;
 	}
 
