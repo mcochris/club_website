@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+//	TODO: add a second session ID to client browsers' localstorage and verify it when the user
+//	clicks the link in the email. This will help prevent users from entering someone elses email
+//	address to allow users beside themselves to access the site.
+
 require_once "include.php";
 
 emailEntered();
@@ -52,7 +56,6 @@ function emailEntered(): void
 		internalError("No CSRF token in session");
 	}
 
-	//if (hash_equals($_SESSION["csrf_token"], $csrf_token) === false) {
 	if ($_SESSION["csrf_token"] !== $csrf_token) {
 		sendResponse(false, "Security issue " . __LINE__);
 		internalError("Invalid CSRF token in session");
@@ -63,8 +66,7 @@ function emailEntered(): void
 	//==============================================================================
 	$secured_csrf_token = hash_hmac('sha3-256', $csrf_token, getServerSecret());
 
-	if (hash_equals($_SESSION["secured_csrf_token"], $secured_csrf_token) === false) {
-	//if ($_SESSION["secured_csrf_token"] !== $secured_csrf_token) {
+	if ($_SESSION["secured_csrf_token"] !== $secured_csrf_token) {
 		sendResponse(false, "Security issue " . __LINE__);
 		internalError("Invalid secured CSRF token in session");
 	}
@@ -109,7 +111,7 @@ function emailEntered(): void
 	//==============================================================================
 	//	Generate a token to email to the user
 	//==============================================================================
-	$hex_token = hash_hmac('sha3-256', random_bytes(32), getServerSecret(), true);
+	$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret(), true);
 	$token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
 
 	//==============================================================================
@@ -123,7 +125,7 @@ function emailEntered(): void
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 	} catch (PDOException $e) {
-		sendResponse(false, "Internal error " . __LINE__);
+		sendResponse(false, "DB error " . $e->getMessage());
 		internalError("Database error: " . $e->getMessage());
 	}
 

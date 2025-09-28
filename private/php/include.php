@@ -6,6 +6,7 @@ require_once 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 //==============================================================================
 //	Configuration
@@ -128,7 +129,6 @@ function mySessionDestroy(): void
 		$params['httponly']
 	);
 
-	//my_session_regenerate_id(true);
 	session_destroy();
 }
 
@@ -176,18 +176,25 @@ function sendEmail(string $to, string $token): void
 
 	$mail = new PHPMailer(true);
 
-	$mail->isSMTP();
-	$mail->Host = 'smtp.improvmx.com';
-	$mail->SMTPAuth = true;
-	$mail->Username = 'admin@chrisstrawser.com';
-	$mail->Password = 'your-improvmx-password';
-	$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-	$mail->Port = 587;
+	try {
+		$mail->SMTPDebug	= SMTP::DEBUG_SERVER;
+		$mail->isSMTP();
+		$mail->Host			= 'smtp.improvmx.com';
+		$mail->SMTPAuth 	= true;
+		$mail->Username 	= 'chris@chrisstrawser.com';
+		$mail->Password 	= 'ekhcW7cE1IM7';
+		$mail->SMTPSecure 	= PHPMailer::ENCRYPTION_STARTTLS;
+		$mail->Port 		= 587;
 
-	$mail->setFrom('admin@chrisstrawser.com', 'Chris Strawser');
-	$mail->addAddress($to);
-	$mail->Subject = $subject;
-	$mail->Body = $body;
+		$mail->setFrom('admin@chrisstrawser.com', 'Chris Strawser');
+		$mail->addAddress($to);
+		$mail->addReplyTo('nobody@example.com', 'Do Not Reply');
+		$mail->Subject		= $subject;
+		$mail->Body			= $body;
 
-	$mail->send();
+		$mail->send();
+	} catch (Exception $e) {
+		sendResponse(false, "Could not send email. Mailer Error: {$mail->ErrorInfo}");
+		internalError("Could not send email to $to. Mailer Error: {$mail->ErrorInfo}");
+	}
 }

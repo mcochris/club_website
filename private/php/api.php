@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 $script = trim(filter_input(INPUT_POST, 'script', FILTER_SANITIZE_FULL_SPECIAL_CHARS));
 
 try {
