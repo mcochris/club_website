@@ -56,7 +56,7 @@ function emailEntered(): void
 		internalError("No CSRF token in session");
 	}
 
-	if ($_SESSION["csrf_token"] !== $csrf_token) {
+	if (strcmp($_SESSION["csrf_token"], $csrf_token) !== 0) {
 		sendResponse(false, "Security issue " . __LINE__);
 		internalError("Invalid CSRF token in session");
 	}
@@ -66,7 +66,7 @@ function emailEntered(): void
 	//==============================================================================
 	$secured_csrf_token = hash_hmac('sha3-256', $csrf_token, getServerSecret("CSRF_SECRET"));
 
-	if ($_SESSION["secured_csrf_token"] !== $secured_csrf_token) {
+	if (strcmp($_SESSION["secured_csrf_token"], $secured_csrf_token) !== 0) {
 		sendResponse(false, "Security issue " . __LINE__);
 		internalError("Invalid secured CSRF token in session");
 	}
