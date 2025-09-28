@@ -1,0 +1,12 @@
+{
+    "name": "chris/club_website",
+    "require": {
+        "phpmailer/phpmailer": "^6.10"
+    },
+    "authors": [
+        {
+            "name": "Chris Strawser",
+            "email": "mcochris@users.noreply.github.com"
+        }
+    ]
+}
