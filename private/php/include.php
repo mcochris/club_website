@@ -81,12 +81,12 @@ function sendResponse(bool $display, string $message): void
 //==============================================================================
 //	get the CSRF secret from the environment
 //==============================================================================
-function getServerSecret(): string
+function getServerSecret(string $key): string
 {
-	$s = getenv('CSRF_SECRET');
+	$s = getenv($key);
 	if (empty($s)) {
 		sendResponse(false, "Internal error " . __LINE__);
-		internalError("Could not get CSRF secret from environment");
+		internalError("Could not get server secret from environment");
 	}
 
 	return $s;
@@ -166,7 +166,7 @@ function openDb(): PDO
 //==============================================================================
 //	Send email with login link
 //==============================================================================
-function sendEmail(string $to, string $token): void
+function sendEmail(string $to, string $token): bool
 {
 	$subject = "Your Club Website login link";
 
@@ -182,19 +182,24 @@ function sendEmail(string $to, string $token): void
 		$mail->Host			= 'smtp.improvmx.com';
 		$mail->SMTPAuth 	= true;
 		$mail->Username 	= 'chris@chrisstrawser.com';
-		$mail->Password 	= 'ekhcW7cE1IM7';
+		$mail->Password 	= getServerSecret("MAIL_PASSWORD");
 		$mail->SMTPSecure 	= PHPMailer::ENCRYPTION_STARTTLS;
 		$mail->Port 		= 587;
 
-		$mail->setFrom('admin@chrisstrawser.com', 'Chris Strawser');
+		$mail->setFrom('chris@chrisstrawser.com', 'Chris Strawser');
 		$mail->addAddress($to);
-		$mail->addReplyTo('nobody@example.com', 'Do Not Reply');
+		$mail->addReplyTo('no-reply@chrisstrawser.com', 'Do Not Reply');
 		$mail->Subject		= $subject;
 		$mail->Body			= $body;
 
 		$mail->send();
 	} catch (Exception $e) {
-		sendResponse(false, "Could not send email. Mailer Error: {$mail->ErrorInfo}");
-		internalError("Could not send email to $to. Mailer Error: {$mail->ErrorInfo}");
+		$pdo = openDb();
+		$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
+		$stmt->bindParam(':exception', $mail->ErrorInfo, PDO::PARAM_STR);
+		$stmt->execute();
+		return false;
 	}
+
+	return true;
 }

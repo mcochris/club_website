@@ -64,7 +64,7 @@ function emailEntered(): void
 	//==============================================================================
 	//	validate the secure CSRF token
 	//==============================================================================
-	$secured_csrf_token = hash_hmac('sha3-256', $csrf_token, getServerSecret());
+	$secured_csrf_token = hash_hmac('sha3-256', $csrf_token, getServerSecret("CSRF_SECRET"));
 
 	if ($_SESSION["secured_csrf_token"] !== $secured_csrf_token) {
 		sendResponse(false, "Security issue " . __LINE__);
@@ -103,7 +103,7 @@ function emailEntered(): void
 	//	If users' email not in DB, we are done
 	//==============================================================================
 	if ($row === false) {
-		sendResponse(true, "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.");
+		sendResponse(true, "");
 		mySessionDestroy();
 		exit;
 	}
@@ -111,7 +111,7 @@ function emailEntered(): void
 	//==============================================================================
 	//	Generate a token to email to the user
 	//==============================================================================
-	$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret(), true);
+	$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
 	$token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
 
 	//==============================================================================
@@ -125,12 +125,15 @@ function emailEntered(): void
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 	} catch (PDOException $e) {
-		sendResponse(false, "DB error " . $e->getMessage());
+		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Database error: " . $e->getMessage());
 	}
 
-	sendResponse(true, "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.");
-	sendEmail($email, $token);
+	if (sendEmail($email, $token) === true)
+		sendResponse(true, "");
+	else
+		sendResponse(false, "");
+
 	mySessionDestroy();
 	exit;
 }

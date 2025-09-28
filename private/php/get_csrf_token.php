@@ -133,7 +133,7 @@ function getCSRFToken(): void
 		//	Create a new CSRF tokens
 		//==============================================================================
 		$_SESSION["csrf_token"] = sodium_bin2base64(random_bytes(16), SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
-		$_SESSION["secured_csrf_token"] = hash_hmac('sha3-256', $_SESSION["csrf_token"], getServerSecret());
+		$_SESSION["secured_csrf_token"] = hash_hmac('sha3-256', $_SESSION["csrf_token"], getServerSecret("CSRF_SECRET"));
 
 		//==============================================================================
 		//	return the CSRF token to the client
