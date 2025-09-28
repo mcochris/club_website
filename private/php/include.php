@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+require_once 'vendor/autoload.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+
 //==============================================================================
 //	Configuration
 //==============================================================================
@@ -156,4 +161,33 @@ function openDb(): PDO
 	}
 
 	return $pdo;
+}
+
+//==============================================================================
+//	Send email with login link
+//==============================================================================
+function sendEmail(string $to, string $token): void
+{
+	$subject = "Your Club Website login link";
+
+	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "/login.html?token=$token";
+
+	$body = "Click on the link below to log in. The link is valid for 30 minutes.\n\n" . $login_url . "\n\nIf you did not request this email, you can safely ignore it.";
+
+	$mail = new PHPMailer(true);
+
+	$mail->isSMTP();
+	$mail->Host = 'smtp.improvmx.com';
+	$mail->SMTPAuth = true;
+	$mail->Username = 'admin@chrisstrawser.com';
+	$mail->Password = 'your-improvmx-password';
+	$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+	$mail->Port = 587;
+
+	$mail->setFrom('admin@chrisstrawser.com', 'Chris Strawser');
+	$mail->addAddress($to);
+	$mail->Subject = $subject;
+	$mail->Body = $body;
+
+	$mail->send();
 }

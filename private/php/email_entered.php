@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 require_once "include.php";
 
-email_entered();
+emailEntered();
 
-function email_entered(): void
+function emailEntered(): void
 {
 	//==============================================================================
 	//	start the session
@@ -24,7 +24,7 @@ function email_entered(): void
 	if (isset($_SESSION["lockout_end_time"])) {
 		$time_diff = $_SESSION["lockout_end_time"] - time();
 		if ($time_diff > 0) {
-			sendResponse(true, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+			sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
 			exit;
 		}
 	}
@@ -63,8 +63,8 @@ function email_entered(): void
 	//==============================================================================
 	$secured_csrf_token = hash_hmac('sha3-256', $csrf_token, getServerSecret());
 
-	//if (hash_equals($_SESSION["secured_csrf_token"], $secured_csrf_token) === false) {
-	if ($_SESSION["secured_csrf_token"] !== $secured_csrf_token) {
+	if (hash_equals($_SESSION["secured_csrf_token"], $secured_csrf_token) === false) {
+	//if ($_SESSION["secured_csrf_token"] !== $secured_csrf_token) {
 		sendResponse(false, "Security issue " . __LINE__);
 		internalError("Invalid secured CSRF token in session");
 	}
@@ -107,22 +107,28 @@ function email_entered(): void
 	}
 
 	//==============================================================================
+	//	Generate a token to email to the user
+	//==============================================================================
+	$hex_token = hash_hmac('sha3-256', random_bytes(32), getServerSecret(), true);
+	$token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
+
+	//==============================================================================
 	//	If users' email in in DB, generate a token for them
 	//==============================================================================
 	try {
 		$stmt = $pdo->prepare("INSERT INTO auth_tokens (user_id, token, expires_at) VALUES (:id, :token, :expires_at)");
 		$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
-		$stmt->bindParam(':token', hash_hmac('sha3-256', random_bytes(16), getServerSecret()), PDO::PARAM_STR);
+		$stmt->bindParam(':token', $token, PDO::PARAM_STR);
 		$stmt->bindParam(':expires_at', date("r", time() + 1800), PDO::PARAM_STR);
 		$stmt->execute();
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 	} catch (PDOException $e) {
-		echo "Database error: " . $e->getMessage();
 		sendResponse(false, "Internal error " . __LINE__);
 		internalError("Database error: " . $e->getMessage());
 	}
 
 	sendResponse(true, "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.");
+	sendEmail($email, $token);
 	mySessionDestroy();
 	exit;
 }
