@@ -82,12 +82,12 @@
 			FORM_DATA.append('csrf_token', CSRF_TOKEN.value);
 			const REPLY = await postData(FORM_DATA);
 			if (REPLY.display)
-				MESSAGE.innerHTML = `<p>If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.</p>`;
+				MESSAGE.textContent = "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.";
 			else
-				MESSAGE.innerHTML = `<h1>Error 1 processing email entry</h1>`;
+				MESSAGE.textContent = REPLY.message;
 			disableEmailInput();
 		})().catch(_error => {
-			DOCUMENT_MAIN.innerHTML = '<h1>Error 2 processing email entry</h1>';
+			DOCUMENT_MAIN.innerHTML = '<h1>Error 1 processing email entry</h1>';
 		}).finally(() => {
 			disableEmailInput();
 		})
