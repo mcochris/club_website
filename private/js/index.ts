@@ -65,7 +65,7 @@
 			disableEmailInput();
 		}
 	})().catch(_error => {
-		DOCUMENT_MAIN.innerHTML = '<h1>Error 2 getting CSRF token</h1>';
+		DOCUMENT_MAIN.innerHTML = '<h1>Error getting CSRF token</h1>';
 	}).finally(async () => {
 		DOCUMENT_MAIN.style.visibility = 'visible';
 	});
