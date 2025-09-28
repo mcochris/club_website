@@ -76,7 +76,7 @@ function emailEntered(): void
 	//==============================================================================
 	$email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 	if (empty($email) or filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-		sendResponse(true, "Please enter a valid email address.");
+		sendResponse(false, "Please enter a valid email address.");
 		internalError("Invalid email address: \"" . $email . "\"");
 	}
 
@@ -132,7 +132,7 @@ function emailEntered(): void
 	if (sendEmail($email, $token) === true)
 		sendResponse(true, "");
 	else
-		sendResponse(false, "");
+		sendResponse(false, "Internal Error " . __LINE__);
 
 	mySessionDestroy();
 	exit;
