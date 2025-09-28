@@ -181,12 +181,12 @@ function sendEmail(string $to, string $token): bool
 		$mail->isSMTP();
 		$mail->Host			= 'smtp.improvmx.com';
 		$mail->SMTPAuth 	= true;
-		$mail->Username 	= 'chris@chrisstrawser.com';
+		$mail->Username 	= getServerSecret("MAIL_USERNAME");
 		$mail->Password 	= getServerSecret("MAIL_PASSWORD");
 		$mail->SMTPSecure 	= PHPMailer::ENCRYPTION_STARTTLS;
 		$mail->Port 		= 587;
 
-		$mail->setFrom('chris@chrisstrawser.com', 'Chris Strawser');
+		$mail->setFrom(getServerSecret("MAIL_USERNAME"), 'Chris');
 		$mail->addAddress($to);
 		$mail->addReplyTo('no-reply@chrisstrawser.com', 'Do Not Reply');
 		$mail->Subject		= $subject;
