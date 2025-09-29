@@ -10,7 +10,6 @@
 
 	// Set current year in footer
 	CURRENT_YEAR.textContent = new Date().getFullYear().toString();
-	EMAIL.value = "";
 
 	//=============================================================
 	// Interface for server response
@@ -68,6 +67,8 @@
 		DOCUMENT_MAIN.innerHTML = '<h1>Error getting CSRF token</h1>';
 	}).finally(async () => {
 		DOCUMENT_MAIN.style.visibility = 'visible';
+		EMAIL.value = "";
+		EMAIL.focus();
 	});
 
 	//=============================================================
@@ -85,9 +86,9 @@
 				MESSAGE.textContent = "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.";
 			else
 				MESSAGE.textContent = REPLY.message;
-		})().catch(error => {
-			console.error(error);
-			DOCUMENT_MAIN.innerHTML = '<h1>Error processing email entry</h1>';
+			return
+		})().catch(_error => {
+			MESSAGE.textContent = 'Error processing email entry';
 		}).finally(() => {
 			disableEmailInput();
 		})

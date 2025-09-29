@@ -9,7 +9,6 @@
     const FORM_BUTTON = document.querySelector("#form-button");
     // Set current year in footer
     CURRENT_YEAR.textContent = new Date().getFullYear().toString();
-    EMAIL.value = "";
     //=============================================================
     // Function to post data to server
     //=============================================================
@@ -54,6 +53,8 @@
         DOCUMENT_MAIN.innerHTML = '<h1>Error getting CSRF token</h1>';
     }).finally(async () => {
         DOCUMENT_MAIN.style.visibility = 'visible';
+        EMAIL.value = "";
+        EMAIL.focus();
     });
     //=============================================================
     // Form submit event listener
@@ -67,12 +68,12 @@
             FORM_DATA.append('csrf_token', CSRF_TOKEN.value);
             const REPLY = await postData(FORM_DATA);
             if (REPLY.display)
-                MESSAGE.textContent = `If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.`;
+                MESSAGE.textContent = "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.";
             else
                 MESSAGE.textContent = REPLY.message;
-            disableEmailInput();
+            return;
         })().catch(_error => {
-            DOCUMENT_MAIN.innerHTML = '<h1>Error 1 processing email entry</h1>';
+            MESSAGE.textContent = 'Error processing email entry';
         }).finally(() => {
             disableEmailInput();
         });
