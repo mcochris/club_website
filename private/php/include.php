@@ -97,7 +97,7 @@ function getServerSecret(string $key): string
 //==============================================================================
 function isValidIPAddr(string $ipAddr = ""): bool
 {
-	if (!PRODUCTION)
+	if (PRODUCTION === false)
 		return true;
 
 	if (
@@ -168,6 +168,9 @@ function openDb(): PDO
 //==============================================================================
 function sendEmail(string $to, string $token): bool
 {
+	if(PRODUCTION === false)
+		return true;
+
 	$subject = "Your Club Website login link";
 
 	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "/login.html?token=$token";
