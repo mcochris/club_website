@@ -3,25 +3,25 @@
 declare(strict_types=1);
 
 //	TODO: add a second session ID to client browsers' localstorage and verify it when the user
-//	clicks the link in the email. This will help prevent users from entering someone elses email
-//	address to allow users beside themselves to access the site.
+//	clicks the link in the email. This will help prevent users from entering someone else's email
+//	address to allow users besides themselves to access the site.
 
 require_once "include.php";
+
+//==============================================================================
+//	start the session
+//==============================================================================
+mySessionStart();
+
+//==============================================================================
+//	set the timezone
+//==============================================================================
+date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
 
 emailEntered();
 
 function emailEntered(): void
 {
-	//==============================================================================
-	//	start the session
-	//==============================================================================
-	mySessionStart();
-
-	//------------------------------------------------------------------------------
-	//	set the timezone
-	//------------------------------------------------------------------------------
-	date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
-
 	//==============================================================================
 	//	get out quick if user is locked out
 	//==============================================================================
