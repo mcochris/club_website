@@ -1,0 +1,3 @@
+Don't delete cookie, allow user's to bypass logging in if they've already logged in. Will need to add logout function.
+
+Add a second session ID to client browsers' localstorage and verify it when the user clicks the link in the email. This will help prevent users from entering someone else's email address to allow users besides themselves to access the site.
