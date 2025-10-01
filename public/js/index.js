@@ -7,7 +7,8 @@
     const EMAIL = document.querySelector("#email");
     const MESSAGE = document.querySelector("#message");
     const FORM_BUTTON = document.querySelector("#form-button");
-    // Set current year in footer
+    const COOKIE_NAME = "PHPSESSID";
+    // Set current year in page footer
     CURRENT_YEAR.textContent = new Date().getFullYear().toString();
     //=============================================================
     // Function to post data to server
@@ -19,12 +20,95 @@
             signal: AbortSignal.timeout(5000)
         });
         if (!RESPONSE.ok)
-            throw new Error(`HTTP error! status: ${RESPONSE.status}`);
+            console.error(`Could not post data: ${RESPONSE.status}`);
         const REPLY = await RESPONSE.json();
         return REPLY;
     }
     //=============================================================
-    // Send timezone to server
+    // Check if user is already logged in
+    //=============================================================
+    async function isUserLoggedIn() {
+        const SESSION_ID = localStorage.getItem(COOKIE_NAME);
+        if (!SESSION_ID)
+            return Promise.resolve(false);
+        // If we get to here, we got a session ID in localstorage, now verify it
+        const FORM_DATA = new FormData();
+        FORM_DATA.append('script', "is_user_logged_in.php");
+        FORM_DATA.append('session_id', SESSION_ID);
+        FORM_DATA.append('TZ', TIMEZONE);
+        const REPLY = await postData(FORM_DATA);
+        if (REPLY.display) {
+            localStorage.setItem(COOKIE_NAME, REPLY.message); // Store new session ID in localstorage
+            return Promise.resolve(true);
+        }
+        else {
+            localStorage.removeItem(COOKIE_NAME);
+            return Promise.resolve(false);
+        }
+    }
+    isUserLoggedIn().then(loggedIn => {
+        // If user is logged in, redirect to member area
+        if (loggedIn) {
+            (async () => {
+                const FORM_DATA = new FormData();
+                FORM_DATA.append('script', "members.php");
+                FORM_DATA.append('timezone', TIMEZONE);
+                FORM_DATA.append('token', localStorage.getItem(COOKIE_NAME) || "");
+                const REPLY = await postData(FORM_DATA);
+                if (REPLY.display)
+                    DOCUMENT_MAIN.innerHTML = REPLY.message;
+            })().catch(error => {
+                console.error("Error fetching members.php:", error);
+            });
+            return;
+        }
+    });
+    //=============================================================
+    // Check if user clicked on login link in email
+    //=============================================================
+    async function isEmailTokenValid() {
+        const URL_PARAMS = new URLSearchParams(window.location.search);
+        const TOKEN = URL_PARAMS.get('token');
+        if (!TOKEN)
+            return Promise.resolve(false);
+        // If we get to here, we got a session ID in localstorage, now verify it
+        const FORM_DATA = new FormData();
+        FORM_DATA.append('script', "is_email_token_valid.php");
+        FORM_DATA.append('token', TOKEN);
+        FORM_DATA.append('TZ', TIMEZONE);
+        const REPLY = await postData(FORM_DATA);
+        if (REPLY.display) {
+            localStorage.setItem(COOKIE_NAME, REPLY.message); // Store new session ID in localstorage
+            return Promise.resolve(true);
+        }
+        else
+            return Promise.resolve(false);
+    }
+    isEmailTokenValid().then(valid => {
+        // If email token is valid, redirect to member area
+        if (valid) {
+            (async () => {
+                const FORM_DATA = new FormData();
+                FORM_DATA.append('script', "members.php");
+                FORM_DATA.append('timezone', TIMEZONE);
+                FORM_DATA.append('token', localStorage.getItem(COOKIE_NAME) || "");
+                const REPLY = await postData(FORM_DATA);
+                if (REPLY.display)
+                    DOCUMENT_MAIN.innerHTML = REPLY.message;
+            })().catch(error => {
+                console.error("Error fetching members.php:", error);
+            });
+            return;
+        }
+    });
+    //=============================================================
+    // Prevent form resubmission on page reload
+    //=============================================================
+    if (window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.href.split('?')[0]);
+    }
+    //=============================================================
+    // If we get to here user is not logged in. Send timezone to server
     //=============================================================
     (async () => {
         const FORM_DATA = new FormData();
@@ -57,7 +141,7 @@
         EMAIL.focus();
     });
     //=============================================================
-    // Form submit event listener
+    // Email form submit event listener
     //=============================================================
     FORM.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -71,7 +155,6 @@
                 MESSAGE.textContent = "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.";
             else
                 MESSAGE.textContent = REPLY.message;
-            return;
         })().catch(_error => {
             MESSAGE.textContent = 'Error processing email entry';
         }).finally(() => {
