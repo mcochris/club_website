@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-//	TODO: implement progress bar to show time left until lockout end
-
 require_once 'include.php';
 
 //==============================================================================

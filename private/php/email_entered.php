@@ -2,10 +2,6 @@
 
 declare(strict_types=1);
 
-//	TODO: add a second session ID to client browsers' localstorage and verify it when the user
-//	clicks the link in the email. This will help prevent users from entering someone else's email
-//	address to allow users besides themselves to access the site.
-
 require_once "include.php";
 
 //==============================================================================
