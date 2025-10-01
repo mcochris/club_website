@@ -175,7 +175,7 @@ function sendEmail(string $to, string $token): bool
 
 	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "/login.html?token=$token";
 
-	$body = "Click on the link below to log in. The link is valid for 30 minutes.\n\n" . $login_url . "\n\nIf you did not request this email, you can safely ignore it.";
+	$body = "Click on the link below to log in. The link is valid for 30 minutes and can only be used once.\n\n" . $login_url . "\n\nIf you did not request this email, you can safely ignore it.";
 
 	$mail = new PHPMailer(true);
 
