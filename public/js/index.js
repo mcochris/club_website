@@ -1,15 +1,16 @@
 (function () {
+    const PRODUCTION = false;
     const TIMEZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const CSRF_TOKEN = document.querySelector("#csrf-token");
-    const CURRENT_YEAR = document.querySelector("#current-year");
+    const DOCUMENT_CSRF_TOKEN = document.querySelector("#csrf-token");
+    const DOCUMENT_FOOTER_YEAR = document.querySelector("#current-year");
     const DOCUMENT_MAIN = document.querySelector("main");
-    const FORM = document.querySelector("form");
-    const EMAIL = document.querySelector("#email");
-    const MESSAGE = document.querySelector("#message");
-    const FORM_BUTTON = document.querySelector("#form-button");
-    const COOKIE_NAME = "PHPSESSID";
+    const DOCUMENT_FORM = document.querySelector("form");
+    const DOCUMENT_EMAIL = document.querySelector("#email");
+    const DOCUMENT_MESSAGE = document.querySelector("#message");
+    const DOCUMENT_FORM_BUTTON = document.querySelector("#form-button");
+    const CLIENT_TOKEN_NAME = "client_token";
     // Set current year in page footer
-    CURRENT_YEAR.textContent = new Date().getFullYear().toString();
+    DOCUMENT_FOOTER_YEAR.textContent = new Date().getFullYear().toString();
     //=============================================================
     // Function to post data to server
     //=============================================================
@@ -19,30 +20,43 @@
             body: data,
             signal: AbortSignal.timeout(5000)
         });
-        if (!RESPONSE.ok)
-            console.error(`Could not post data: ${RESPONSE.status}`);
         const REPLY = await RESPONSE.json();
         return REPLY;
     }
     //=============================================================
+    // Send timezone to server
+    //=============================================================
+    (async function () {
+        const FORM_DATA = new FormData();
+        FORM_DATA.append('script', "set_tz.php");
+        FORM_DATA.append('timezone', TIMEZONE);
+        const REPLY = await postData(FORM_DATA);
+        if (!REPLY.display) {
+            DOCUMENT_MESSAGE.textContent = "Internal error 1";
+            PRODUCTION || console.error("Error setting timezone:", REPLY.message);
+            DOCUMENT_MAIN.style.visibility = "visible";
+            disableEmailInput();
+            return;
+        }
+    })();
+    //=============================================================
     // Check if user is already logged in
     //=============================================================
     async function isUserLoggedIn() {
-        const SESSION_ID = localStorage.getItem(COOKIE_NAME);
-        if (!SESSION_ID)
+        const CLIENT_TOKEN = localStorage.getItem(CLIENT_TOKEN_NAME);
+        if (!CLIENT_TOKEN)
             return Promise.resolve(false);
-        // If we get to here, we got a session ID in localstorage, now verify it
+        // If we get to here, we have a client token in localstorage, now verify it
         const FORM_DATA = new FormData();
         FORM_DATA.append('script', "is_user_logged_in.php");
-        FORM_DATA.append('session_id', SESSION_ID);
-        FORM_DATA.append('TZ', TIMEZONE);
+        FORM_DATA.append('client_token', CLIENT_TOKEN);
         const REPLY = await postData(FORM_DATA);
         if (REPLY.display) {
-            localStorage.setItem(COOKIE_NAME, REPLY.message); // Store new session ID in localstorage
+            localStorage.setItem(CLIENT_TOKEN_NAME, REPLY.message); // Store new client token in localstorage
             return Promise.resolve(true);
         }
         else {
-            localStorage.removeItem(COOKIE_NAME);
+            localStorage.removeItem(CLIENT_TOKEN_NAME);
             return Promise.resolve(false);
         }
     }
@@ -52,13 +66,16 @@
             (async () => {
                 const FORM_DATA = new FormData();
                 FORM_DATA.append('script', "members.php");
-                FORM_DATA.append('timezone', TIMEZONE);
-                FORM_DATA.append('token', localStorage.getItem(COOKIE_NAME) || "");
+                FORM_DATA.append('token', localStorage.getItem(CLIENT_TOKEN_NAME) || "");
                 const REPLY = await postData(FORM_DATA);
-                if (REPLY.display)
-                    DOCUMENT_MAIN.innerHTML = REPLY.message;
+                if (REPLY.display) {
+                    DOCUMENT_MAIN.innerHTML = REPLY.message; //	will be the members area HTML
+                    DOCUMENT_MAIN.style.visibility = "visible";
+                }
+                else
+                    getCSRFToken();
             })().catch(error => {
-                console.error("Error fetching members.php:", error);
+                PRODUCTION || console.error("Error fetching members.php:", error);
             });
             return;
         }
@@ -71,14 +88,12 @@
         const TOKEN = URL_PARAMS.get('token');
         if (!TOKEN)
             return Promise.resolve(false);
-        // If we get to here, we got a session ID in localstorage, now verify it
         const FORM_DATA = new FormData();
         FORM_DATA.append('script', "is_email_token_valid.php");
         FORM_DATA.append('token', TOKEN);
-        FORM_DATA.append('TZ', TIMEZONE);
         const REPLY = await postData(FORM_DATA);
         if (REPLY.display) {
-            localStorage.setItem(COOKIE_NAME, REPLY.message); // Store new session ID in localstorage
+            localStorage.setItem(CLIENT_TOKEN_NAME, REPLY.message); // Store new session ID in localstorage
             return Promise.resolve(true);
         }
         else
@@ -90,73 +105,61 @@
             (async () => {
                 const FORM_DATA = new FormData();
                 FORM_DATA.append('script', "members.php");
-                FORM_DATA.append('timezone', TIMEZONE);
-                FORM_DATA.append('token', localStorage.getItem(COOKIE_NAME) || "");
+                FORM_DATA.append('token', localStorage.getItem(CLIENT_TOKEN_NAME) || "");
                 const REPLY = await postData(FORM_DATA);
                 if (REPLY.display)
-                    DOCUMENT_MAIN.innerHTML = REPLY.message;
+                    DOCUMENT_MAIN.innerHTML = REPLY.message; //	will be the members area HTML
             })().catch(error => {
-                console.error("Error fetching members.php:", error);
+                PRODUCTION || console.error("Error fetching members.php:", error);
             });
-            return;
         }
+        else
+            history.replaceState(null, '', window.location.href.split('?')[0]);
     });
     //=============================================================
     // Prevent form resubmission on page reload
     //=============================================================
-    if (window.history.replaceState) {
+    if (window.history.replaceState)
         window.history.replaceState(null, '', window.location.href.split('?')[0]);
-    }
-    //=============================================================
-    // If we get to here user is not logged in. Send timezone to server
-    //=============================================================
-    (async () => {
-        const FORM_DATA = new FormData();
-        FORM_DATA.append('script', "set_tz.php");
-        FORM_DATA.append('timezone', TIMEZONE);
-        const REPLY = await postData(FORM_DATA);
-        if (REPLY.display === false)
-            DOCUMENT_MAIN.innerHTML = `<h1>Error 1 sending timezone</h1>`;
-    })().catch(_error => {
-        DOCUMENT_MAIN.innerHTML = '<h1>Error 2 sending timezone</h1>';
-    });
     //=============================================================
     // Get CSRF token from server
     //=============================================================
-    (async () => {
-        const FORM_DATA = new FormData();
-        FORM_DATA.append('script', "get_csrf_token.php");
-        const REPLY = await postData(FORM_DATA);
-        if (REPLY.display)
-            CSRF_TOKEN.value = REPLY.message;
-        else {
-            DOCUMENT_MAIN.innerHTML = REPLY.message;
-            disableEmailInput();
-        }
-    })().catch(_error => {
-        DOCUMENT_MAIN.innerHTML = '<h1>Error getting CSRF token</h1>';
-    }).finally(async () => {
-        DOCUMENT_MAIN.style.visibility = 'visible';
-        EMAIL.value = "";
-        EMAIL.focus();
-    });
+    function getCSRFToken() {
+        (async () => {
+            const FORM_DATA = new FormData();
+            FORM_DATA.append('script', "get_csrf_token.php");
+            const REPLY = await postData(FORM_DATA);
+            if (REPLY.display) {
+                DOCUMENT_CSRF_TOKEN.value = REPLY.message;
+                DOCUMENT_EMAIL.value = "";
+                DOCUMENT_EMAIL.focus();
+            }
+            else {
+                DOCUMENT_MAIN.innerHTML = REPLY.message;
+            }
+        })().catch(error => {
+            PRODUCTION || console.error("Error fetching CSRF token:", error);
+            DOCUMENT_MAIN.textContent = 'Internal error 2';
+        });
+        DOCUMENT_MAIN.style.visibility = "visible";
+    }
     //=============================================================
     // Email form submit event listener
     //=============================================================
-    FORM.addEventListener('submit', (event) => {
+    DOCUMENT_FORM.addEventListener('submit', (event) => {
         event.preventDefault();
         (async () => {
             const FORM_DATA = new FormData();
             FORM_DATA.append('script', "email_entered.php");
-            FORM_DATA.append('email', EMAIL.value);
-            FORM_DATA.append('csrf_token', CSRF_TOKEN.value);
+            FORM_DATA.append('email', DOCUMENT_EMAIL.value);
+            FORM_DATA.append('csrf_token', DOCUMENT_CSRF_TOKEN.value);
             const REPLY = await postData(FORM_DATA);
             if (REPLY.display)
-                MESSAGE.textContent = "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.";
+                DOCUMENT_MESSAGE.textContent = "If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.";
             else
-                MESSAGE.textContent = REPLY.message;
+                DOCUMENT_MESSAGE.textContent = REPLY.message;
         })().catch(_error => {
-            MESSAGE.textContent = 'Error processing email entry';
+            DOCUMENT_MESSAGE.textContent = 'Error processing email entry';
         }).finally(() => {
             disableEmailInput();
         });
@@ -165,8 +168,8 @@
     // Disable email input and remove submit button
     //=============================================================
     function disableEmailInput() {
-        EMAIL.disabled = true;
-        FORM_BUTTON.remove();
+        DOCUMENT_EMAIL.disabled = true;
+        DOCUMENT_FORM_BUTTON.remove();
     }
 })();
 export {};
