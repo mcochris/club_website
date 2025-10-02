@@ -1,10 +1,10 @@
-@font-face {
+/*@font-face {
 	font-family: "Brandon";
 	font-style: normal;
 	font-weight: 400;
 	src: local("Brandon"), url("../fonts/Brandon_reg.otf") format("opentype");
 	font-display: swap;
-}
+}*/
 
 html {
 	height: 100%;
@@ -13,22 +13,26 @@ html {
 }
 
 body {
-	font-family: "Brandon", Verdana, sans-serif;
+	/*font-family: "Brandon", Verdana, sans-serif;*/
 	background: rgb(188, 179, 166);
 	padding: 0;
 	margin: 0;
 	height: 100%;
+	width: 100%;
 	display: flex;
 	flex-direction: column;
 	color: rgb(55, 46, 45);
 }
 
 main {
-	font-size: 24px;
 	flex: 1;
 	height: 100%;
 	overflow: auto;
-	visibility: hidden;
+}
+
+form {
+	/*font-size: 24px;*/
+	/*visibility: hidden;*/
 	text-align: center;
 }
 
