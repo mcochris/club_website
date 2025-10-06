@@ -1,7 +1,7 @@
 html {
 	height: 100%;
 	font-family: Arial, sans-serif;
-	background: #f4f4f4;
+	background: whitesmoke;
 	margin: 0;
 	padding: 0;
 }
@@ -26,17 +26,23 @@ header {
 	text-align: center;
 	font-size: 24px;
 	font-weight: bold;
-	padding: 20px;
+	padding: 1em;
 	background: #007BFF;
 	color: whitesmoke;
-	margin-bottom: 20px;
+	margin-bottom: 1em;
+}
+
+.loader {
+	position: absolute;
+	top: 50%;
+	left: 50%;
 }
 
 footer {
 	font-size: 14px;
 	color: #777;
-	margin-top: 20px;
-	padding: 10px;
+	margin-top: 1em;
+	padding: 1em;
 	border-top: 1px solid #ccc;
 	text-align: center;
 }
