@@ -51,19 +51,18 @@
         const loginForm = new FormData();
         loginForm.append('script', "is_user_logged_in.php");
         loginForm.append('token', logged_in_token);
-        // If token is invalid, user may be logged in but in timeout
-        // Need to display login form again
         const loginReply = await postData(loginForm);
         if (!loginReply.display) {
             localStorage.removeItem("logged_in_token");
             return;
         }
-        if (loginReply.display && loginReply.message) {
-            // User is logged, display message (may be error or info)
-            DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize(loginReply.message);
-            //DOCUMENT_MAIN.style.visibility = "visible";
-            return;
+        if (loginReply.message) {
+            // User is logged, should return json array of first & last name
+            const userInfo = JSON.parse(loginReply.message);
+            DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize(`Welcome back ${userInfo.firstName} ${userInfo.lastName}`);
         }
+        else
+            DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize("Welcome back");
         // User is logged in, fetch member area
         await displayMemberArea();
     }
