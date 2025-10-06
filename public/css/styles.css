@@ -8,6 +8,8 @@
 
 html {
 	height: 100%;
+	font-family: Arial, sans-serif;
+	background: whitesmoke;
 	margin: 0;
 	padding: 0;
 }
@@ -40,22 +42,23 @@ header {
 	text-align: center;
 	font-size: 32px;
 	font-weight: bold;
-	background: rgb(132, 118, 75);
+	padding: 1em;
+	background: #007BFF;
+	color: whitesmoke;
 	margin-bottom: 1em;
 }
 
-section .main-text {
-	margin: 0 auto;
-	width: 90%;
-	max-width: 80%;
-	text-align: left;
+.loader {
+	position: absolute;
+	top: 50%;
+	left: 50%;
 }
 
 footer {
-	background: rgb(132, 118, 75);
-	font-size: 18px;
+	font-size: 14px;
+	color: #777;
 	margin-top: 1em;
-	padding: .5em;
-	border-top: 1px solid rgb(219, 215, 211);
+	padding: 1em;
+	border-top: 1px solid #ccc;
 	text-align: center;
 }

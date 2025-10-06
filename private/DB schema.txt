@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
-    name TEXT,
+    firstName TEXT,
+    lastName TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -20,6 +20,8 @@ define(
 		"session.auto_start" => "0",
 		"session.use_only_cookies" => "1",
 		"session.gc_maxlifetime" => "3600",	// 1 hour
+		"session.cookie_path" => "/",
+		"session.cookie_domain" => "",	// current domain only
 		"session.cookie_lifetime" => "0",	// until browser is closed
 		"session.cookie_httponly" => "1",
 		"session.cookie_secure" => "1",
@@ -49,11 +51,11 @@ function internalError(string $error_message = ""): void
 		$stmt->bindParam(':exception', $contents, PDO::PARAM_STR);
 		$stmt->execute();
 	} catch (PDOException $e) {
-		mySessionDestroy();
+		//mySessionDestroy();
 		exit;
 	}
 
-	mySessionDestroy();
+	//mySessionDestroy();
 	exit;
 }
 
@@ -173,9 +175,9 @@ function sendEmail(string $to, string $token): bool
 
 	$subject = "Your Club Website login link";
 
-	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "/login.html?token=$token";
+	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "/index.html?token=$token";
 
-	$body = "Click on the link below to log in. The link is valid for 30 minutes.\n\n" . $login_url . "\n\nIf you did not request this email, you can safely ignore it.";
+	$body = "Click on the link below to log in. The link is valid for 30 minutes and can only be used once.\n\n" . $login_url . "\n\nIf you did not request this email, you can safely ignore it.";
 
 	$mail = new PHPMailer(true);
 
