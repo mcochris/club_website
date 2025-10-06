@@ -32,7 +32,7 @@ $pdo = openDb();
 //	See if email token is in DB, if so get the user's name
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("SELECT users.name, auth_tokens.expires_at, auth_tokens.used FROM users JOIN auth_tokens ON users.id = auth_tokens.user_id where auth_tokens.token = :token");
+	$stmt = $pdo->prepare("SELECT users.name, email_tokens.expires_at, email_tokens.used FROM users JOIN email_tokens ON users.id = email_tokens.user_id where email_tokens.token = :token");
 	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -73,7 +73,7 @@ if ($expires_at < time()) {
 //	If we get to here, the token is valid. Mark it as used
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("UPDATE auth_tokens SET used = 1 WHERE token = :token");
+	$stmt = $pdo->prepare("UPDATE email_tokens SET used = 1 WHERE token = :token");
 	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
 	$stmt->execute();
 } catch (PDOException $e) {

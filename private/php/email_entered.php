@@ -110,7 +110,7 @@ $token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING)
 //	If users' email in in DB, generate a token for them
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("INSERT INTO auth_tokens (user_id, token, expires_at) VALUES (:id, :token, :expires_at)");
+	$stmt = $pdo->prepare("INSERT INTO email_tokens (user_id, token, expires_at) VALUES (:id, :token, :expires_at)");
 	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
 	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
 	$stmt->bindParam(':expires_at', date("r", time() + 1800), PDO::PARAM_STR);
