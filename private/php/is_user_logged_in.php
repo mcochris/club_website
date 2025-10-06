@@ -14,5 +14,5 @@ mySessionStart();
 //==============================================================================
 date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
 
-//sendResponse(false, "Not logged in");
-sendResponse(true, "Logged in");
+sendResponse(false, "Not logged in");
+//sendResponse(true, "Logged in");
