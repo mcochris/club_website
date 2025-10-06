@@ -20,6 +20,8 @@ define(
 		"session.auto_start" => "0",
 		"session.use_only_cookies" => "1",
 		"session.gc_maxlifetime" => "3600",	// 1 hour
+		"session.cookie_path" => "/",
+		"session.cookie_domain" => "",	// current domain only
 		"session.cookie_lifetime" => "0",	// until browser is closed
 		"session.cookie_httponly" => "1",
 		"session.cookie_secure" => "1",
