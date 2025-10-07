@@ -18,7 +18,7 @@ date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
 //	get the token from the POST data
 //==============================================================================
 $token = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-if ($token === null || $token === false) {
+if (empty($token)) {
 	sendResponse(false, "No token provided");
 	exit;
 }
@@ -32,7 +32,7 @@ $pdo = openDb();
 //	See if email token is in DB, if so get the user's name
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("SELECT users.name, email_tokens.expires_at, email_tokens.used FROM users JOIN email_tokens ON users.id = email_tokens.user_id where email_tokens.token = :token");
+	$stmt = $pdo->prepare("SELECT email_tokens.expires_at, email_tokens.used FROM users JOIN email_tokens ON users.id = email_tokens.user_id where email_tokens.token = :token");
 	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -82,10 +82,24 @@ try {
 }
 
 //==============================================================================
-//	Generate a local session token
+//	Generate a token for the client's localStorage. Store the token in the DB
 //==============================================================================
-$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
-$_SESSION["local_token"] = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
-$_SESSION["secured_local_token"] = hash_hmac('sha3-256', $_SESSION["local_token"], getServerSecret("CSRF_SECRET"));
+//$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
+//$local_token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
+//$secured_local_token = hash_hmac('sha3-256', $local_token, getServerSecret("CSRF_SECRET"), true);
 
-sendResponse(true, $_SESSION["local_token"]);
+$mySigningKeypair = sodium_crypto_sign_keypair();
+$secretKey = sodium_crypto_sign_secretkey($mySigningKeypair);
+$publicKey = sodium_crypto_sign_publickey($mySigningKeypair);
+
+try {
+	$stmt = $pdo->prepare("INSERT INTO logged_in_tokens (user_id, local_token) VALUES ((SELECT user_id FROM email_tokens WHERE token = :token), :local_token)");
+	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
+	$stmt->bindParam(':local_token', $secured_local_token, PDO::PARAM_STR);
+	$stmt->execute();
+} catch (PDOException $e) {
+	sendResponse(false, "Internal error " . __LINE__);
+	internalError("Database error: " . $e->getMessage());
+}
+
+sendResponse(true, $local_token);
