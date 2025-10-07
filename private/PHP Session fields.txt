@@ -10,5 +10,3 @@ time_accessed
 time_accessed_human
 browser
 ip_address
-local_token
-secured_local_token

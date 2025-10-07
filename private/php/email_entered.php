@@ -103,17 +103,18 @@ if (empty($row)) {
 //==============================================================================
 //	Users' name is in the DB, generate a token to email to the user
 //==============================================================================
-$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
-$token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
+//$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
+$token = sodium_bin2base64(random_bytes(32), SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
+$token_hash = hash("sha3-256", $token);
 
 //==============================================================================
 //	Store the token in the DB with 30 minute expiration
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("INSERT INTO email_tokens (user_id, token, expires_at) VALUES (:id, :token, :expires_at)");
+	$stmt = $pdo->prepare("INSERT INTO magic_link_tokens (user_id, token_hash, expires_at) VALUES (:id, :token_hash, :expires_at)");
 	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
-	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
-	$stmt->bindParam(':expires_at', date("r", time() + 1800), PDO::PARAM_STR);
+	$stmt->bindParam(':token_hash', $token_hash, PDO::PARAM_STR);
+	$stmt->bindParam(':expires_at', time() + 1800, PDO::PARAM_INT);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {

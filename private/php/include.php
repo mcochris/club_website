@@ -19,10 +19,10 @@ define(
 	[
 		"session.auto_start" => "0",
 		"session.use_only_cookies" => "1",
-		"session.gc_maxlifetime" => "3600",	// 1 hour
+		"session.gc_maxlifetime" => "31536000",		// 1 year
 		"session.cookie_path" => "/",
-		"session.cookie_domain" => "",	// current domain only
-		"session.cookie_lifetime" => "0",	// until browser is closed
+		"session.cookie_domain" => "",				// current domain only
+		"session.cookie_lifetime" => "31536000",	// 1 year
 		"session.cookie_httponly" => "1",
 		"session.cookie_secure" => "1",
 		"session.cookie_samesite" => "Strict",
@@ -81,7 +81,7 @@ function sendResponse(bool $display, string $message): void
 }
 
 //==============================================================================
-//	get the CSRF secret from the environment
+//	get the secrets from the environment
 //==============================================================================
 function getServerSecret(string $key): string
 {
@@ -95,7 +95,7 @@ function getServerSecret(string $key): string
 }
 
 //==============================================================================
-//	validate IP address (allowing for mobile users)
+//	validate IP address
 //==============================================================================
 function isValidIPAddr(string $ipAddr = ""): bool
 {
@@ -136,7 +136,7 @@ function mySessionDestroy(): void
 
 //==============================================================================
 // My session start function support timestamp management
-// TODO: "do not use ol session" logic not working as expected
+// TODO: "do not use old session" logic not working as expected
 //==============================================================================
 function mySessionStart()
 {
@@ -186,8 +186,8 @@ function sendEmail(string $to, string $token): bool
 		$mail->isSMTP();
 		$mail->Host			= 'smtp.improvmx.com';
 		$mail->SMTPAuth 	= true;
-		$mail->Username 	= getServerSecret("MAIL_USERNAME");
-		$mail->Password 	= getServerSecret("MAIL_PASSWORD");
+		$mail->Username 	= getServerSecret("MAIL_USERNAME");	// improvmx username
+		$mail->Password 	= getServerSecret("MAIL_PASSWORD");	// improvmx password
 		$mail->SMTPSecure 	= PHPMailer::ENCRYPTION_STARTTLS;
 		$mail->Port 		= 587;
 
@@ -207,4 +207,14 @@ function sendEmail(string $to, string $token): bool
 	}
 
 	return true;
+}
+
+function base64_encode_url($string)
+{
+	return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($string));
+}
+
+function base64_decode_url($string)
+{
+	return base64_decode(str_replace(['-', '_'], ['+', '/'], $string));
 }

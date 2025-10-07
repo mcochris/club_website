@@ -32,8 +32,8 @@ $pdo = openDb();
 //	See if email token is in DB, if so get the user's name
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("SELECT email_tokens.expires_at, email_tokens.used FROM users JOIN email_tokens ON users.id = email_tokens.user_id where email_tokens.token = :token");
-	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
+	$stmt = $pdo->prepare("SELECT magic_link_tokens.expires_at, magic_link_tokens.used FROM users JOIN magic_link_tokens ON users.id = magic_link_tokens.user_id where magic_link_tokens.token_hash = :token_hash");
+	$stmt->bindParam(':token_hash', $token, PDO::PARAM_STR);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -81,6 +81,8 @@ try {
 	internalError("Database error: " . $e->getMessage());
 }
 
+sendResponse(true, "Valid token");
+
 //==============================================================================
 //	Generate a token for the client's localStorage. Store the token in the DB
 //==============================================================================
@@ -88,18 +90,18 @@ try {
 //$local_token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
 //$secured_local_token = hash_hmac('sha3-256', $local_token, getServerSecret("CSRF_SECRET"), true);
 
-$mySigningKeypair = sodium_crypto_sign_keypair();
-$secretKey = sodium_crypto_sign_secretkey($mySigningKeypair);
-$publicKey = sodium_crypto_sign_publickey($mySigningKeypair);
+//$mySigningKeypair = sodium_crypto_sign_keypair();
+//$secretKey = sodium_crypto_sign_secretkey($mySigningKeypair);
+//$publicKey = sodium_crypto_sign_publickey($mySigningKeypair);
 
-try {
-	$stmt = $pdo->prepare("INSERT INTO logged_in_tokens (user_id, local_token) VALUES ((SELECT user_id FROM email_tokens WHERE token = :token), :local_token)");
-	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
-	$stmt->bindParam(':local_token', $secured_local_token, PDO::PARAM_STR);
-	$stmt->execute();
-} catch (PDOException $e) {
-	sendResponse(false, "Internal error " . __LINE__);
-	internalError("Database error: " . $e->getMessage());
-}
+//try {
+//	$stmt = $pdo->prepare("INSERT INTO logged_in_tokens (user_id, local_token) VALUES ((SELECT user_id FROM email_tokens WHERE token = :token), :local_token)");
+//	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
+//	$stmt->bindParam(':local_token', $secured_local_token, PDO::PARAM_STR);
+//	$stmt->execute();
+//} catch (PDOException $e) {
+//	sendResponse(false, "Internal error " . __LINE__);
+//	internalError("Database error: " . $e->getMessage());
+//}
 
-sendResponse(true, $local_token);
+//sendResponse(true, $local_token);

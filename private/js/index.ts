@@ -29,7 +29,7 @@ declare const DOMPurify: any;
 		const response = await fetch("api.php", {
 			method: 'POST',
 			body: data,
-			credentials: 'same-origin', // Important: includes cookies
+			credentials: 'same-origin', // Important: include cookies
 			signal: AbortSignal.timeout(5000)
 		});
 
@@ -51,23 +51,10 @@ declare const DOMPurify: any;
 	// Check if user is already logged in
 	//=============================================================
 	async function isUserLoggedIn(): Promise<void> {
-		const logged_in_token = localStorage.getItem("logged_in_token");
-		if (!logged_in_token) return;
-
-		// Verify the token with server
 		const loginForm = new FormData();
 		loginForm.append('script', "is_user_logged_in.php");
-		loginForm.append('token', logged_in_token);
-
 		const loginReply = await postData(loginForm);
-
-		if (!loginReply.display) {
-			localStorage.removeItem("logged_in_token");
-			return;
-		}
-
-		// User is logged in, fetch member area
-		await displayMemberArea();
+		if (loginReply.display) await displayMemberArea();
 	}
 
 	//=============================================================
@@ -93,14 +80,11 @@ declare const DOMPurify: any;
 			return;
 		}
 
-		// User email token was legitimate, store new token in localStorage
-		localStorage.setItem("logged_in_token", reply.message);
-
 		await displayMemberArea();
 	}
 
 	//=============================================================
-	// Email form submit event listener
+	// User clicked the email submit button
 	//=============================================================
 	DOCUMENT_FORM.addEventListener('submit', (event) => {
 		event.preventDefault();

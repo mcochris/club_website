@@ -1,5 +1,6 @@
--- Create tables in SQLite
-CREATE TABLE IF NOT EXISTS users (
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     firstName TEXT,
@@ -7,17 +8,21 @@ CREATE TABLE IF NOT EXISTS users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS email_tokens (
+CREATE TABLE magic_link_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    token TEXT UNIQUE NOT NULL,
+    token_hash TEXT UNIQUE NOT NULL,
     expires_at DATETIME NOT NULL,
-    used BOOLEAN DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    used BOOLEAN DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS logged_in_tokens (
+CREATE INDEX idx_token_hash ON magic_link_tokens(token_hash);
+CREATE INDEX idx_user_id ON magic_link_tokens(user_id);
+CREATE INDEX idx_expires_at ON magic_link_tokens(expires_at);
+
+CREATE TABLE logged_in_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     local_token TEXT UNIQUE NOT NULL,
@@ -25,20 +30,20 @@ CREATE TABLE IF NOT EXISTS logged_in_tokens (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS exceptions  (
+CREATE TABLE exceptions  (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	exception TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS logins (
+CREATE TABLE logins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS visits (
+CREATE TABLE visits (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
