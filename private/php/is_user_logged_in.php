@@ -15,7 +15,17 @@ mySessionStart();
 date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
 
 //==============================================================================
-//	get the token from the POST data
+//	If session does not indicate user is logged in, we need to check the token
+//	in the POST data against the DB. If the token is valid, we are logged in.
+//	If the token is not valid, we are not logged in and return false.
+//==============================================================================
+if (!empty($_SESSION["user_id"])) {
+	sendResponse(true, "User ID in session");
+	exit;
+}
+
+//==============================================================================
+//	User is not currently logged in via session. Check the token in the POST data
 //==============================================================================
 $token = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 if (empty($token)) {
@@ -39,7 +49,7 @@ try {
 }
 
 //==============================================================================
-//	If the token is not in DB, we are done
+//	If the token is not in DB, user has not logged in in the past,we are done
 //==============================================================================
 if (empty($row)) {
 	sendResponse(false, "Not logged in");
@@ -51,4 +61,3 @@ if (empty($row)) {
 //	If we get to here, the token was found in the DB. We are logged in
 //==============================================================================
 sendResponse(true, json_encode(["firstName" => $row["firstName"], "lastName" => $row["lastName"]]));
-exit;
