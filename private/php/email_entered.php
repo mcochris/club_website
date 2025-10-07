@@ -94,20 +94,20 @@ try {
 //==============================================================================
 //	If users' email not in DB, we are done
 //==============================================================================
-if ($row === false) {
-	sendResponse(true, "");
+if (empty($row)) {
+	sendResponse(true, "");	//	Don't indicate email not found
 	mySessionDestroy();
 	exit;
 }
 
 //==============================================================================
-//	Generate a token to email to the user
+//	Users' name is in the DB, generate a token to email to the user
 //==============================================================================
 $hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
 $token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
 
 //==============================================================================
-//	If users' email in in DB, generate a token for them
+//	Store the token in the DB with 30 minute expiration
 //==============================================================================
 try {
 	$stmt = $pdo->prepare("INSERT INTO email_tokens (user_id, token, expires_at) VALUES (:id, :token, :expires_at)");
@@ -117,13 +117,13 @@ try {
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-	sendResponse(false, "Internal error " . __LINE__);
+	sendResponse(true, "Internal error " . __LINE__);	//	Don't indicate error to user
 	internalError("Database error: " . $e->getMessage());
 }
 
 if (sendEmail($email, $token) === true)
 	sendResponse(true, "");
 else
-	sendResponse(false, "Internal Error " . __LINE__);
+	sendResponse(true, "Internal Error " . __LINE__);
 
 //mySessionDestroy();
