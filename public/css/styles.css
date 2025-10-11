@@ -1,7 +1,6 @@
 html {
 	height: 100%;
 	font-family: Arial, sans-serif;
-	/*background: whitesmoke;*/
 	margin: 0;
 	padding: 0;
 }
@@ -22,7 +21,8 @@ main {
 	flex: 1;
 	height: 100%;
 	overflow: auto;
-	visibility: hidden;}
+	visibility: hidden;
+}
 
 form {
 	text-align: center;
@@ -36,12 +36,6 @@ header {
 	background: rgb(132, 118, 75);
 	color: rgb(219, 215, 211);
 	margin-bottom: 1em;
-}
-
-.loader {
-	position: absolute;
-	top: 50%;
-	left: 50%;
 }
 
 footer {
