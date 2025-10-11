@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once "include.php";
 
 //==============================================================================
-//	start the session
+//	start the session to get the timezone
 //==============================================================================
 mySessionStart();
 
@@ -15,15 +15,16 @@ mySessionStart();
 date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
 
 //==============================================================================
-//	get out quick if user is locked out
+//	Get out quick if user is locked out. User can be locked out for accessing
+//	the site too many times or too frequently.
 //==============================================================================
-if (isset($_SESSION["lockout_end_time"])) {
-	$time_diff = $_SESSION["lockout_end_time"] - time();
-	if ($time_diff > 0) {
-		sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
-		exit;
-	}
-}
+//if (isset($_SESSION["lockout_end_time"])) {
+//	$time_diff = $_SESSION["lockout_end_time"] - time();
+//	if ($time_diff > 0) {
+//		sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
+//		exit;
+//	}
+//}
 
 //==============================================================================
 //	get out quick if browser ID or IP address missing
@@ -95,17 +96,48 @@ try {
 //	If users' email not in DB, we are done
 //==============================================================================
 if (empty($row)) {
-	sendResponse(true, "");	//	Don't indicate email not found
-	mySessionDestroy();
+	sendResponse(false, "");
 	exit;
 }
 
 //==============================================================================
+// Delete expired tokens for this user
+//==============================================================================
+try {
+	$stmt = $pdo->prepare("DELETE FROM magic_link_tokens WHERE user_id = :id AND expires_at < :now");
+	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
+	$now = time();
+	$stmt->bindParam(':now', $now, PDO::PARAM_INT);
+	$stmt->execute();
+} catch (PDOException $e) {
+	sendResponse(true, "Internal error " . __LINE__);	//	Don't indicate error to user
+	internalError("Database error: " . $e->getMessage());
+}
+
+//==============================================================================
+//	Deny request if user has an outstanding (not expired) token
+//==============================================================================
+try {
+	$stmt = $pdo->prepare("SELECT expires_at FROM magic_link_tokens WHERE user_id = :id");
+	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
+	$stmt->execute();
+	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+	sendResponse(true, "Internal error " . __LINE__);	//	Don't indicate error to user
+	internalError("Database error: " . $e->getMessage());
+}
+
+if (!empty($row))
+	if ($row["expires_at"] > time()) {
+		sendResponse(false, "You already have an outstanding login link. Please check your email.");
+		exit;
+	}
+
+//==============================================================================
 //	Users' name is in the DB, generate a token to email to the user
 //==============================================================================
-//$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
 $token = sodium_bin2base64(random_bytes(32), SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
-$token_hash = hash("sha3-256", $token);
+$token_hash = hash("sha3-224", $token);
 
 //==============================================================================
 //	Store the token in the DB with 30 minute expiration
@@ -114,17 +146,18 @@ try {
 	$stmt = $pdo->prepare("INSERT INTO magic_link_tokens (user_id, token_hash, expires_at) VALUES (:id, :token_hash, :expires_at)");
 	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
 	$stmt->bindParam(':token_hash', $token_hash, PDO::PARAM_STR);
-	$stmt->bindParam(':expires_at', time() + 1800, PDO::PARAM_INT);
+	$expires = time() + 1800;	//	30 minutes from now
+	$stmt->bindParam(':expires_at', $expires, PDO::PARAM_INT);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-	sendResponse(true, "Internal error " . __LINE__);	//	Don't indicate error to user
+	sendResponse(false, "");	//	Don't indicate error to user
 	internalError("Database error: " . $e->getMessage());
 }
 
 if (sendEmail($email, $token) === true)
 	sendResponse(true, "");
 else
-	sendResponse(true, "Internal Error " . __LINE__);
+	sendResponse(false, "");
 
-//mySessionDestroy();
+exit;
