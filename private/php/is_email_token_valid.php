@@ -82,26 +82,4 @@ try {
 }
 
 sendResponse(true, "Valid token");
-
-//==============================================================================
-//	Generate a token for the client's localStorage. Store the token in the DB
-//==============================================================================
-//$hex_token = hash_hmac('sha3-256', random_bytes(16), getServerSecret("CSRF_SECRET"), true);
-//$local_token = sodium_bin2base64($hex_token, SODIUM_BASE64_VARIANT_URLSAFE_NO_PADDING);
-//$secured_local_token = hash_hmac('sha3-256', $local_token, getServerSecret("CSRF_SECRET"), true);
-
-//$mySigningKeypair = sodium_crypto_sign_keypair();
-//$secretKey = sodium_crypto_sign_secretkey($mySigningKeypair);
-//$publicKey = sodium_crypto_sign_publickey($mySigningKeypair);
-
-//try {
-//	$stmt = $pdo->prepare("INSERT INTO logged_in_tokens (user_id, local_token) VALUES ((SELECT user_id FROM email_tokens WHERE token = :token), :local_token)");
-//	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
-//	$stmt->bindParam(':local_token', $secured_local_token, PDO::PARAM_STR);
-//	$stmt->execute();
-//} catch (PDOException $e) {
-//	sendResponse(false, "Internal error " . __LINE__);
-//	internalError("Database error: " . $e->getMessage());
-//}
-
-//sendResponse(true, $local_token);
+exit;

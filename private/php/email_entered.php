@@ -40,37 +40,12 @@ if (empty($_SERVER["REMOTE_ADDR"])) {
 }
 
 //==============================================================================
-//	validate the CSRF token
-//==============================================================================
-//$csrf_token = filter_input(INPUT_POST, 'csrf_token', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-//if (empty($csrf_token)) {
-//	sendResponse(false, "Security issue " . __LINE__);
-//	//internalError("No CSRF token in session");
-//}
-
-//if (strcmp($_SESSION["csrf_token"], $csrf_token) !== 0) {
-//	sendResponse(false, "Security issue " . __LINE__);
-//	//internalError("Invalid CSRF token in session");
-//}
-
-//==============================================================================
-//	validate the secure CSRF token
-//==============================================================================
-//$secured_csrf_token = hash_hmac('sha3-256', $csrf_token, getServerSecret("CSRF_SECRET"));
-
-//if (strcmp($_SESSION["secured_csrf_token"], $secured_csrf_token) !== 0) {
-//	sendResponse(false, "Security issue " . __LINE__);
-//	//internalError("Invalid secured CSRF token in session");
-//}
-
-//==============================================================================
 //	validate email address
 //==============================================================================
 $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 if (empty($email) or filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
 	sendResponse(false, "Please enter a valid email address.");
-	//internalError("Invalid email address: \"" . $email . "\"");
+	exit;
 }
 
 //==============================================================================

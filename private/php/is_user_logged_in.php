@@ -10,11 +10,6 @@ require_once "include.php";
 mySessionStart();
 
 //==============================================================================
-//	set the timezone
-//==============================================================================
-//date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
-
-//==============================================================================
 //	If session does not indicate user is logged in, we need to check the token
 //	in the POST data against the DB. If the token is valid, we are logged in.
 //	If the token is not valid, we are not logged in and return false.
@@ -24,42 +19,4 @@ if (empty($_SESSION["user_id"]))
 else
 	sendResponse(true, "User ID in session");
 
-
-
-//==============================================================================
-//	User is not currently logged in via session. Check the token in the POST data
-//==============================================================================
-//$token = filter_input(INPUT_POST, 'token', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-//if (empty($token)) {
-//	sendResponse(false, "No token provided");
-//	exit;
-//}
-
-//==============================================================================
-//	Verify token from clients' localStorage in DB
-//==============================================================================
-//$pdo = openDb();
-
-//try {
-//	$stmt = $pdo->prepare("SELECT users.firstName, users.lastName FROM users JOIN logged_in_tokens ON users.id = logged_in_tokens.user_id where logged_in_tokens.token = :token");
-//	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
-//	$stmt->execute();
-//	$row = $stmt->fetch(PDO::FETCH_ASSOC);
-//} catch (PDOException $e) {
-//	sendResponse(false, "Internal error " . __LINE__);
-//	internalError("Database error: " . $e->getMessage());
-//}
-
-//==============================================================================
-//	If the token is not in DB, user has not logged in in the past,we are done
-//==============================================================================
-//if (empty($row)) {
-//	sendResponse(false, "Not logged in");
-//	mySessionDestroy();
-//	exit;
-//}
-
-//==============================================================================
-//	If we get to here, the token was found in the DB. We are logged in
-//==============================================================================
-//sendResponse(true, json_encode(["firstName" => $row["firstName"], "lastName" => $row["lastName"]]));
+exit;
