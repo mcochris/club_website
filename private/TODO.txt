@@ -1,5 +1,5 @@
 Add logout function.
 
-Implement progress meter/clock for timeouts
+Add logins to logins DB table
 
-EMail retry too aggressive, need to be # of hits per minute, currently appears to be just # hits
+Add visits to visits DB table
