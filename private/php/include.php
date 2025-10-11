@@ -74,10 +74,10 @@ function myVarDump($mixed = null): string
 //==============================================================================
 //	Send results back to client
 //==============================================================================
-function sendResponse(bool $display, string $message): void
+function sendResponse(bool $status, string $message): void
 {
 	header('Content-Type: application/json');
-	echo json_encode(["display" => $display, "message" => $message]);
+	echo json_encode(["status" => $status, "message" => $message]);
 }
 
 //==============================================================================
@@ -193,7 +193,8 @@ function sendEmail(string $to, string $token): bool
 
 		$mail->setFrom(getServerSecret("MAIL_USERNAME"), 'Chris');
 		$mail->addAddress($to);
-		$mail->addReplyTo('no-reply@chrisstrawser.com', 'Do Not Reply');
+		$reply_to = 'no-reply@' . $_SERVER['HTTP_HOST'];
+		$mail->addReplyTo($reply_to, 'Do Not Reply');
 		$mail->Subject		= $subject;
 		$mail->Body			= $body;
 
@@ -209,12 +210,12 @@ function sendEmail(string $to, string $token): bool
 	return true;
 }
 
-function base64_encode_url($string)
-{
-	return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($string));
-}
+//function base64_encode_url($string)
+//{
+//	return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($string));
+//}
 
-function base64_decode_url($string)
-{
-	return base64_decode(str_replace(['-', '_'], ['+', '/'], $string));
-}
+//function base64_decode_url($string)
+//{
+//	return base64_decode(str_replace(['-', '_'], ['+', '/'], $string));
+//}
