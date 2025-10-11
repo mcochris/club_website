@@ -11,7 +11,7 @@ use PHPMailer\PHPMailer\Exception;
 //==============================================================================
 //	Configuration
 //==============================================================================
-define("PRODUCTION", false);
+define("PRODUCTION", true);
 define("DSN", "sqlite:" . __DIR__ . "/../clubWebsite.db");
 
 define(
