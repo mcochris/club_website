@@ -1,29 +1,18 @@
-//=============================================================
-// Main script
-//=============================================================
 (async function () {
     const DOCUMENT_FOOTER_YEAR = document.querySelector("#current-year");
     const DOCUMENT_MAIN = document.querySelector("main");
     const DOCUMENT_FORM = document.querySelector("form");
     const DOCUMENT_EMAIL = document.querySelector("#email");
-    // Set current year in page footer
     DOCUMENT_FOOTER_YEAR.textContent = new Date().getFullYear().toString();
-    //=============================================================
-    // Function to post data to server
-    //=============================================================
     async function postData(data) {
         const response = await fetch("api.php", {
             method: 'POST',
             body: data,
-            credentials: 'same-origin', // Important: include cookies
-            signal: AbortSignal.timeout(5000)
+            credentials: 'same-origin',
         });
         const reply = await response.json();
         return reply;
     }
-    //=============================================================
-    // Send timezone to server
-    //=============================================================
     async function sendTimezone() {
         const form = new FormData();
         form.append('script', "set_tz.php");
@@ -31,25 +20,18 @@
         await postData(form);
     }
     ;
-    //=============================================================
-    // Check if user is already logged in
-    //=============================================================
     async function isUserLoggedIn() {
         const form = new FormData();
         form.append('script', "is_user_logged_in.php");
         const reply = await postData(form);
         return reply.status;
     }
-    //=============================================================
-    // Check if user clicked the magic link in email
-    //=============================================================
     async function isEmailTokenValid(email_token) {
         history.replaceState(null, '', window.location.href.split('?')[0]);
         const form = new FormData();
         form.append('script', "is_email_token_valid.php");
         form.append('token', email_token);
         const reply = await postData(form);
-        // Token was not legitimate, display message from server (old token, already used, etc.)
         if (!reply.status) {
             if (reply.message)
                 DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize(reply.message);
@@ -57,9 +39,6 @@
         }
         return reply.status;
     }
-    //=============================================================
-    // User clicked the email submit button
-    //=============================================================
     DOCUMENT_FORM.addEventListener('submit', (event) => {
         event.preventDefault();
         (async () => {
@@ -70,22 +49,15 @@
             if (reply.status)
                 DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize("If the email you entered is in our system, you will receive an email with instructions on how to access the member section of this website.");
             else if (reply.message)
-                //	Display error message from server (lockout, invalid email, etc.)
                 DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize(reply.message);
         })();
     });
-    //=============================================================
-    // Fetch and display member area
-    //=============================================================
     async function displayMemberArea() {
         const form_data = new FormData();
         form_data.append('script', "members.php");
         const reply = await postData(form_data);
         DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize(reply.message);
     }
-    //=============================================================
-    // Initial actions
-    //=============================================================
     sendTimezone();
     const url_params = new URLSearchParams(window.location.search);
     const email_token = url_params.get('token');
