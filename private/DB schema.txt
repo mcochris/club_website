@@ -22,14 +22,6 @@ CREATE INDEX idx_token_hash ON magic_link_tokens(token_hash);
 CREATE INDEX idx_user_id ON magic_link_tokens(user_id);
 CREATE INDEX idx_expires_at ON magic_link_tokens(expires_at);
 
-CREATE TABLE logged_in_tokens (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    local_token TEXT UNIQUE NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
 CREATE TABLE exceptions  (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	exception TEXT NOT NULL,
