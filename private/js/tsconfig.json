@@ -14,6 +14,7 @@
 		// "types": ["node"],
 		// and npm install -D @types/node
 		// Other Outputs
+		"removeComments": true,
 		"sourceMap": true,
 		//"inlineSourceMap": true,
 		//"sourceRoot": "/var/www/club_website_scripts",
