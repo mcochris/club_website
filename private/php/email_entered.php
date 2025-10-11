@@ -71,7 +71,7 @@ try {
 //	If users' email not in DB, we are done
 //==============================================================================
 if (empty($row)) {
-	sendResponse(false, "");
+	sendResponse(true, "");	//	Don't indicate status to user
 	exit;
 }
 
@@ -96,14 +96,14 @@ try {
 	$stmt = $pdo->prepare("SELECT expires_at FROM magic_link_tokens WHERE user_id = :id");
 	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
 	$stmt->execute();
-	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	$row2 = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
 	sendResponse(true, "Internal error " . __LINE__);	//	Don't indicate error to user
 	internalError("Database error: " . $e->getMessage());
 }
 
-if (!empty($row))
-	if ($row["expires_at"] > time()) {
+if (!empty($row2))
+	if ($row2["expires_at"] > time()) {
 		sendResponse(false, "You already have an outstanding login link. Please check your email.");
 		exit;
 	}
