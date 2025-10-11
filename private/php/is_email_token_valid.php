@@ -29,7 +29,7 @@ if (empty($token)) {
 $pdo = openDb();
 
 //==============================================================================
-//	See if email token is in DB, if so get the user's name
+//	See if email token is in DB. If it is, get the user's name
 //==============================================================================
 try {
 	$stmt = $pdo->prepare("SELECT magic_link_tokens.expires_at, magic_link_tokens.used FROM users JOIN magic_link_tokens ON users.id = magic_link_tokens.user_id where magic_link_tokens.token_hash = :token_hash");
@@ -45,7 +45,7 @@ try {
 //	If the token is not in DB, we are done
 //==============================================================================
 if ($row === false) {
-	sendResponse(false, "Invalid token");
+	sendResponse(false, "");	// don't say "token not found" to avoid leaking info
 	mySessionDestroy();
 	exit;
 }
