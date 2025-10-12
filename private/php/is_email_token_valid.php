@@ -81,5 +81,19 @@ try {
 	internalError("Database error: " . $e->getMessage());
 }
 
+//==============================================================================
+//	Update logins table in DB with user ID and timestamp
+//==============================================================================
+try {
+	$stmt = $pdo->prepare("INSERT INTO logins (user_id, ip_address) VALUES (:user_id, :ip_address)");
+	$stmt->bindParam(':user_id', $row["id"], PDO::PARAM_INT);
+	$ip_address = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+	$stmt->bindParam(':ip_address', $ip_address, PDO::PARAM_STR);
+	$stmt->execute();
+} catch (PDOException $e) {
+	sendResponse(false, "Internal error " . __LINE__);
+	internalError("Database error: " . $e->getMessage());
+}
+
 sendResponse(true, "Valid token");
 exit;
