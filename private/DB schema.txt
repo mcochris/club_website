@@ -32,6 +32,7 @@ CREATE TABLE logins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	ip_address TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -39,5 +40,6 @@ CREATE TABLE visits (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+	ip_address TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
