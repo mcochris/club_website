@@ -3,3 +3,5 @@ Add logout function.
 Add logins to logins DB table
 
 Add visits to visits DB table
+
+If user navigates to chrisstrawser.com/index.html/?token=kjjsflk (any token), css stops loading (note / after index.html, w/o slash, all ok)
