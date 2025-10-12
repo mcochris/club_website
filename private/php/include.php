@@ -11,7 +11,7 @@ use PHPMailer\PHPMailer\Exception;
 //==============================================================================
 //	Configuration
 //==============================================================================
-define("PRODUCTION", true);
+define("PRODUCTION", $_SERVER['HTTP_HOST'] === "chrisstrawser.com");
 define("DSN", "sqlite:" . __DIR__ . "/../clubWebsite.db");
 
 define(
