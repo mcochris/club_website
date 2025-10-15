@@ -18,24 +18,48 @@ body {
 
 main {
 	margin: 0 5%;
-	flex: 1;
+	text-align: center;
 	height: 100%;
 	overflow: auto;
 	visibility: hidden;
 }
 
 form {
-	text-align: center;
 	margin: .5em 0 2em 0;
 }
 
 header {
-	text-align: center;
-	font-size: 32px;
-	font-weight: bold;
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	/* Left spacer, title, right button */
+	align-items: center;
+	position: relative;
 	background: rgb(132, 118, 75);
 	color: rgb(219, 215, 211);
 	margin-bottom: 1em;
+}
+
+#header-title-div {
+	grid-column: 2;
+	font-size: xx-large;
+	font-weight: bold;
+}
+
+#logout-link-div {
+	grid-column: 3;
+	justify-self: end;
+	font-size: small;
+	font-weight: normal;
+	align-self: center;
+	padding-right: 1em;
+}
+
+#logout-link-div a {
+	color: rgb(219, 215, 211);
+}
+
+#logout-link {
+	visibility: hidden;
 }
 
 footer {
