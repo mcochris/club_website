@@ -24,6 +24,11 @@ if (empty($token)) {
 }
 
 //==============================================================================
+//	hash the token
+//==============================================================================
+$token_hash = hash("sha3-224", $token);
+
+//==============================================================================
 //	Open the DB
 //==============================================================================
 $pdo = openDb();
@@ -32,8 +37,11 @@ $pdo = openDb();
 //	See if email token is in DB. If it is, get the user's name
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("SELECT magic_link_tokens.expires_at, magic_link_tokens.used FROM users JOIN magic_link_tokens ON users.id = magic_link_tokens.user_id where magic_link_tokens.token_hash = :token_hash");
-	$stmt->bindParam(':token_hash', $token, PDO::PARAM_STR);
+	$stmt = $pdo->prepare("
+	SELECT magic_link_tokens.expires_at, magic_link_tokens.used, users.id, users.firstName, users.lastName, users.email
+	FROM users JOIN magic_link_tokens ON users.id = magic_link_tokens.user_id
+	WHERE magic_link_tokens.token_hash = :token_hash");
+	$stmt->bindParam(':token_hash', $token_hash, PDO::PARAM_STR);
 	$stmt->execute();
 	$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -42,11 +50,10 @@ try {
 }
 
 //==============================================================================
-//	If the token is not in DB, we are done
+//	If the hashed token is not in DB, we are done
 //==============================================================================
-if ($row === false) {
+if (empty($row)) {
 	sendResponse(false, "");	// don't say "token not found" to avoid leaking info
-	mySessionDestroy();
 	exit;
 }
 
@@ -55,17 +62,14 @@ if ($row === false) {
 //==============================================================================
 if ($row["used"] == 1) {
 	sendResponse(false, "Token has already been used");
-	mySessionDestroy();
 	exit;
 }
 
 //==============================================================================
 //	See if token is expired
 //==============================================================================
-$expires_at = strtotime($row["expires_at"]);
-if ($expires_at < time()) {
+if ($row["expires_at"] < time()) {
 	sendResponse(false, "Token has expired");
-	mySessionDestroy();
 	exit;
 }
 
@@ -73,7 +77,7 @@ if ($expires_at < time()) {
 //	If we get to here, the token is valid. Mark it as used
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("UPDATE email_tokens SET used = 1 WHERE token = :token");
+	$stmt = $pdo->prepare("UPDATE magic_link_tokens SET used = 1 WHERE token_hash = :token");
 	$stmt->bindParam(':token', $token, PDO::PARAM_STR);
 	$stmt->execute();
 } catch (PDOException $e) {
@@ -94,6 +98,12 @@ try {
 	sendResponse(false, "Internal error " . __LINE__);
 	internalError("Database error: " . $e->getMessage());
 }
+
+$_SESSION["user_id"] = $row["id"];
+$_SESSION["users_first_name"] = $row["firstName"];
+$_SESSION["users_last_name"] = $row["lastName"];
+$_SESSION["users_email"] = $row["email"];
+$_SESSION["login_time"] = time();
 
 sendResponse(true, "Valid token");
 exit;
