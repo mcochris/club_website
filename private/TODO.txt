@@ -1,9 +1,13 @@
 Add logout function.
 
-Add logins to logins DB table
+DONE - Add logins to logins DB table
 
 Add visits to visits DB table
 
 FIXED - If user navigates to chrisstrawser.com/index.html/?token=kjjsflk (any token), css stops loading (note / after index.html, w/o slash, all ok)
 
 members.php may return false if user is not logged in, need to handle return value in index.ts
+
+FIXED - if the email token is invalid, is_email_token_valid.php returns false, but screen is blank. screen should show email entry dialog
+
+if user is logged in and cookie if cleared (or they log out before the email token expires), site may say "you have an outstanding login link..."
