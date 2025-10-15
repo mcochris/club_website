@@ -9,9 +9,12 @@ declare const DOMPurify: any;
 	const DOCUMENT_MAIN = document.querySelector("main") as HTMLElement;
 	const DOCUMENT_FORM = document.querySelector("form") as HTMLFormElement;
 	const DOCUMENT_EMAIL = document.querySelector("#email") as HTMLInputElement;
+	const LOGOUT_LINK = document.querySelector("#logout-link") as HTMLAnchorElement;
 
 	// Set current year in page footer
 	DOCUMENT_FOOTER_YEAR.textContent = new Date().getFullYear().toString();
+	DOCUMENT_EMAIL.value = "";
+	DOCUMENT_MAIN.focus();
 
 	//=============================================================
 	// Interface for server response
@@ -29,7 +32,7 @@ declare const DOMPurify: any;
 			method: 'POST',
 			body: data,
 			credentials: 'same-origin', // Important: include cookies
-			//signal: AbortSignal.timeout(10000)
+			signal: AbortSignal.timeout(10000)
 		});
 
 		const reply = await response.json();
@@ -83,6 +86,10 @@ declare const DOMPurify: any;
 	DOCUMENT_FORM.addEventListener('submit', (event) => {
 		event.preventDefault();
 		(async () => {
+			if (!isValidEmailStrict(DOCUMENT_EMAIL.value)) {
+				DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize("The email address you entered is not valid. Please check the address and try again.");
+				return;
+			}
 			const form_data = new FormData();
 			form_data.append('script', "email_entered.php");
 			form_data.append('email', DOCUMENT_EMAIL.value);
@@ -104,6 +111,17 @@ declare const DOMPurify: any;
 		const reply = await postData(form_data);
 
 		DOCUMENT_MAIN.innerHTML = DOMPurify.sanitize(reply.message);
+		DOCUMENT_MAIN.style.visibility = "visible";
+		LOGOUT_LINK.style.visibility = "visible";
+
+		LOGOUT_LINK.addEventListener('click', async (event) => {
+			event.preventDefault();
+			const form = new FormData();
+			form.append('script', "logout.php");
+			await postData(form);
+			DOCUMENT_MAIN.style.visibility = "hidden";
+			LOGOUT_LINK.style.visibility = "hidden";
+		});
 	}
 
 	//=============================================================
@@ -119,8 +137,18 @@ declare const DOMPurify: any;
 	else if (email_token) {
 		const reply = await isEmailTokenValid(email_token);
 		if (reply) displayMemberArea();
+	} else {
+		// User is not logged in, display email form
+		DOCUMENT_MAIN.style.visibility = "visible";
 	}
 
-	DOCUMENT_MAIN.style.visibility = "visible";
+	//=============================================================
+	// Email validation function (strict)
+	//=============================================================
+	function isValidEmailStrict(email: string): boolean {
+		const emailRegex =
+			/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+		return emailRegex.test(email);
+	}
 })();
 export { };
