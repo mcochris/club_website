@@ -124,14 +124,14 @@ try {
 	$expires = time() + 1800;	//	30 minutes from now
 	$stmt->bindParam(':expires_at', $expires, PDO::PARAM_INT);
 	$stmt->execute();
-	$row = $stmt->fetch(PDO::FETCH_ASSOC);
+	//$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
 	sendResponse(false, "");	//	Don't indicate error to user
 	internalError("Database error: " . $e->getMessage());
 }
 
 if (sendEmail($email, $token) === true)
-	sendResponse(true, "");
+	sendResponse(true, PRODUCTION ? "" : $token);
 else
 	sendResponse(false, "");
 
