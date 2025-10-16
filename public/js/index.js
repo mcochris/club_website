@@ -72,8 +72,7 @@
             const form = new FormData();
             form.append('script', "logout.php");
             await postData(form);
-            DOCUMENT_MAIN.style.visibility = "hidden";
-            LOGOUT_LINK.style.visibility = "hidden";
+            document.location.reload();
         });
     }
     sendTimezone();
