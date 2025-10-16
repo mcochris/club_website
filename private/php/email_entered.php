@@ -76,10 +76,10 @@ if (empty($row)) {
 }
 
 //==============================================================================
-// Delete expired tokens for this user
+// Delete expired or used tokens for this user
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("DELETE FROM magic_link_tokens WHERE user_id = :id AND expires_at < :now");
+	$stmt = $pdo->prepare("DELETE FROM magic_link_tokens WHERE user_id = :id AND (expires_at < :now OR used = TRUE)");
 	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
 	$now = time();
 	$stmt->bindParam(':now', $now, PDO::PARAM_INT);
@@ -93,7 +93,7 @@ try {
 //	Deny request if user has an outstanding (not expired) token
 //==============================================================================
 try {
-	$stmt = $pdo->prepare("SELECT expires_at FROM magic_link_tokens WHERE user_id = :id");
+	$stmt = $pdo->prepare("SELECT expires_at, used FROM magic_link_tokens WHERE user_id = :id");
 	$stmt->bindParam(':id', $row["id"], PDO::PARAM_INT);
 	$stmt->execute();
 	$row2 = $stmt->fetch(PDO::FETCH_ASSOC);
