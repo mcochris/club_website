@@ -31,7 +31,7 @@ define(
 		"log_errors" => "1",
 		"error_log" => LOGFILE,
 		"display_errors" => PRODUCTION ? "0" : "1",
-		"error_reporting" => E_ALL
+		"error_reporting" => "E_ALL"
 	]
 );
 
