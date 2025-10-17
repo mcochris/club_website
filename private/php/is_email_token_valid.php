@@ -60,7 +60,7 @@ if (empty($row)) {
 //==============================================================================
 //	IF we get to here, the token was found in the DB. See if the token has been used
 //==============================================================================
-if ($row["used"] == 1) {
+if (!empty($row["used"])) {
 	sendResponse(false, "Token has already been used");
 	exit;
 }

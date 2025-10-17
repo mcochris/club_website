@@ -200,7 +200,8 @@ function sendEmail(string $to, string $token): bool
 	} catch (Exception $e) {
 		$pdo = openDb();
 		$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
-		$stmt->bindParam(':exception', $mail->ErrorInfo, PDO::PARAM_STR);
+		$info = $mail->ErrorInfo;
+		$stmt->bindParam(':exception', $info, PDO::PARAM_STR);
 		$stmt->execute();
 		return false;
 	}

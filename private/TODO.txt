@@ -13,3 +13,7 @@ WORKED-AROUND - if the email token is invalid, is_email_token_valid.php returns 
 FIXED - if user is logged in and cookie if cleared (or they log out before the email token expires), site may say "you have an outstanding login link..."
 
 FIXED - After user logs out, main part of screen is blank, should show login screen
+
+In production, email_entered.php returns 500 if user is in DB. But the email is still sent.
+
+In production, if I logout then click the email link again, I get a blank main screen
