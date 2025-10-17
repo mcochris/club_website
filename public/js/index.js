@@ -12,7 +12,7 @@
             method: 'POST',
             body: data,
             credentials: 'same-origin',
-            signal: AbortSignal.timeout(10000)
+            signal: AbortSignal.timeout(20000)
         });
         const reply = await response.json();
         return reply;

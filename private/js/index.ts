@@ -32,7 +32,7 @@ declare const DOMPurify: any;
 			method: 'POST',
 			body: data,
 			credentials: 'same-origin', // Important: include cookies
-			signal: AbortSignal.timeout(10000)
+			signal: AbortSignal.timeout(20000)
 		});
 
 		const reply = await response.json();
