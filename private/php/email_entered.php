@@ -15,18 +15,6 @@ mySessionStart();
 date_default_timezone_set($_SESSION["TZ"] ?? "UTC");
 
 //==============================================================================
-//	Get out quick if user is locked out. User can be locked out for accessing
-//	the site too many times or too frequently.
-//==============================================================================
-//if (isset($_SESSION["lockout_end_time"])) {
-//	$time_diff = $_SESSION["lockout_end_time"] - time();
-//	if ($time_diff > 0) {
-//		sendResponse(false, "Site access lockout expires at " . date("g:i:s a", $_SESSION["lockout_end_time"]) . ".");
-//		exit;
-//	}
-//}
-
-//==============================================================================
 //	get out quick if browser ID or IP address missing
 //==============================================================================
 if (empty($_SERVER["HTTP_USER_AGENT"])) {
@@ -124,7 +112,6 @@ try {
 	$expires = time() + 1800;	//	30 minutes from now
 	$stmt->bindParam(':expires_at', $expires, PDO::PARAM_INT);
 	$stmt->execute();
-	//$row = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
 	sendResponse(false, "");	//	Don't indicate error to user
 	internalError("Database error: " . $e->getMessage());
