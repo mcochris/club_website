@@ -9,9 +9,13 @@
 	],
 	"settings": {
 		"cSpell.words": [
+			"chrisstrawser",
 			"ERRMODE",
 			"httponly",
+			"improvmx",
+			"LOGFILE",
 			"maxlifetime",
+			"STARTTLS",
 			"Strawser",
 			"URLSAFE"
 		]
