@@ -13,6 +13,7 @@ use PHPMailer\PHPMailer\Exception;
 //==============================================================================
 define("PRODUCTION", $_SERVER['HTTP_HOST'] === "chrisstrawser.com");
 define("DSN", "sqlite:" . __DIR__ . "/../clubWebsite.db");
+define("LOGFILE", __DIR__ . "/../php.log");
 
 define(
 	"SESSION_SETTINGS",
@@ -26,7 +27,11 @@ define(
 		"session.cookie_httponly" => "1",
 		"session.cookie_secure" => "1",
 		"session.cookie_samesite" => "Strict",
-		"session.use_strict_mode" => "1"
+		"session.use_strict_mode" => "1",
+		"log_errors" => "1",
+		"error_log" => LOGFILE,
+		"display_errors" => PRODUCTION ? "0" : "1",
+		"error_reporting" => E_ALL
 	]
 );
 
@@ -44,16 +49,7 @@ function internalError(string $error_message = ""): void
 {
 	// user should have been informed already via sendResponse()
 	$contents = myVarDump(debug_backtrace());
-
-	try {
-		$pdo = openDb();
-		$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
-		$stmt->bindParam(':exception', $contents, PDO::PARAM_STR);
-		$stmt->execute();
-	} catch (PDOException $e) {
-		exit;
-	}
-
+	error_log(date('Y-m-d H:i:s') . " Internal error: $error_message\n$contents\n", 3, LOGFILE);
 	exit;
 }
 
@@ -168,19 +164,21 @@ function openDb(): PDO
 //==============================================================================
 function sendEmail(string $to, string $token): bool
 {
-	if(PRODUCTION === false)
+	if (PRODUCTION === false)
 		return true;
+
+	error_log(date('Y-m-d H:i:s') . " Sending email to $to with token $token\n", 3, LOGFILE);
 
 	$subject = "Your Club Website login link";
 
-	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "/index.html?token=$token";
+	$login_url = "https://" . $_SERVER['HTTP_HOST'] . "?token=$token";
 
 	$body = "Click on the link below to log in. The link is valid for 30 minutes and can only be used once.\n\n" . $login_url . "\n\nIf you did not request this email, you can safely ignore it.";
 
-	$mail = new PHPMailer(true);
+	$mail = new PHPMailer();
 
 	try {
-//		$mail->SMTPDebug	= SMTP::DEBUG_SERVER;
+		//		$mail->SMTPDebug	= SMTP::DEBUG_SERVER;
 		$mail->isSMTP();
 		$mail->Host			= 'smtp.improvmx.com';
 		$mail->SMTPAuth 	= true;
@@ -198,13 +196,12 @@ function sendEmail(string $to, string $token): bool
 
 		$mail->send();
 	} catch (Exception $e) {
-		$pdo = openDb();
-		$stmt = $pdo->prepare("INSERT INTO exceptions (exception) VALUES (:exception)");
 		$info = $mail->ErrorInfo;
-		$stmt->bindParam(':exception', $info, PDO::PARAM_STR);
-		$stmt->execute();
+		error_log(date('Y-m-d H:i:s') . " Email could not be sent to $to. Mailer Error: $info\n", 3, LOGFILE);
 		return false;
 	}
+
+	error_log(date('Y-m-d H:i:s') . " Email sent to $to\n", 3, LOGFILE);
 
 	return true;
 }
